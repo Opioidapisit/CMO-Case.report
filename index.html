@@ -38,7 +38,7 @@
 
     <!-- React and Babel Libraries -->
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script> <!-- ADDED -->
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script> 
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
     <!-- Firebase Libraries (Compat versions for single-file HTML) -->
@@ -418,7 +418,7 @@
 
                 const finalData = {
                     ...formData,
-                    chief_complaints: Array.isArray(formData.chief_complaints) ? formData.chief_complaints.join('; ') : formData.chief_complaints,
+                    chief_complaints: Array.isArray(formData.chief_complaints) ? formData.chief_complaints.join('; ') : formData.chiefComplaints,
                     status: newStatus || formData.status,
                 };
                 
@@ -638,14 +638,22 @@
 
                     {/* Header and Action Buttons */}
                     <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4 mb-8">
+                        {/* 1. เพิ่มเคสใหม่ */}
                         <button onClick={onAddCase}
                                 className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-lg shadow-lg transition duration-150 ease-in-out">
                             <span className="text-xl">+</span> เพิ่มเคสใหม่
                         </button>
+                        {/* 2. อัพโหลดไฟล์เคส (NEW) */}
+                        <a href={DRIVE_UPLOAD_FOLDER_URL} target="_blank" rel="noopener noreferrer"
+                                className="flex-1 bg-amber-400 hover:bg-amber-500 text-gray-900 font-semibold py-3 px-6 rounded-lg shadow-lg transition duration-150 ease-in-out text-center flex items-center justify-center">
+                            <span className="text-lg mr-2">⬆️</span> อัพโหลดไฟล์เคส
+                        </a>
+                        {/* 3. ส่งต่อผู้ป่วย */}
                         <button onClick={() => alert('ฟังก์ชันส่งต่อผู้ป่วยจะถูกพัฒนาในภายหลัง')}
                                 className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-6 rounded-lg transition duration-150 ease-in-out">
                             ส่งต่อผู้ป่วย
                         </button>
+                        {/* 4. รายงานอาการไม่พึงประสงค์ */}
                         <button onClick={() => alert('ฟังก์ชันรายงาน ADR จะถูกพัฒนาในภายหลัง')}
                                 className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-6 rounded-lg transition duration-150 ease-in-out">
                             รายงานอาการไม่พึงประสงค์
@@ -782,10 +790,10 @@
                     
                     if (shouldPrint) {
                         // 2. Trigger Apps Script Record/PDF (for Google Sheet update/Drive upload)
-                        await triggerAppsScriptRecord({ ...caseData, id: docId, status: 'ปิดเคสแล้ว' }, isEdit);
+                        // This is non-blocking to avoid CORS issues
+                        triggerAppsScriptRecord({ ...caseData, id: docId, status: 'ปิดเคสแล้ว' }, isEdit);
                         
-                        // 3. Show Print View
-                        // Ensure we use the latest data if possible, or fallback to the saved data
+                        // 3. Show Print View immediately
                         const updatedCase = cases.find(c => c.id === docId) || { ...caseData, id: docId, timestamp: new Date().toLocaleDateString('th-TH') };
                         setCurrentCase(updatedCase);
                         setShowPrintView(true);
@@ -807,14 +815,13 @@
             // Function to handle Apps Script POST (For Record/PDF ONLY)
             const triggerAppsScriptRecord = async (caseData, isEdit) => {
                 if (APPS_SCRIPT_RECORD_URL.includes('YOUR_DEPLOYED_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE')) {
-                    alert('⚠️ ไม่สามารถบันทึกเข้า Google Sheet/Drive ได้: กรุณาตั้งค่า APPS_SCRIPT_RECORD_URL');
+                    console.warn('Apps Script URL not set. Skipping sheet recording.');
                     return;
                 }
                 
                 try {
                     const caseDataForScript = { 
                         ...caseData, 
-                        // Apps Script requires simple string ID and status
                         isEdit: isEdit 
                     }; 
                     
@@ -830,16 +837,15 @@
                     
                     const result = await response.json();
 
-                    if (result.success) {
-                        console.log("Apps Script Record/PDF Success:", result.message);
-                    } else {
+                    if (!result.success) {
+                        // Throw if Apps Script processed but returned a business logic error
                         throw new Error(result.message || 'Apps Script reported an error.');
                     }
 
                 } catch (e) {
                     console.error("Apps Script Record/PDF Error:", e);
-                    // Show soft error: data is saved in Firebase, but Google Sheet/Drive failed
-                    alert(`แจ้งเตือน: การบันทึกข้อมูลเข้า Google Sheet และสร้าง PDF ล้มเหลว (${e.message}) ข้อมูลหลักถูกบันทึกใน Firebase แล้ว.`);
+                    // Show soft error using the new custom message
+                    alert(`ข้อมูลหลักถูกบันทึกใน Firebase แล้ว ยืนยันการบันทึกเป็น pdf ของท่าน`);
                 }
             };
 
@@ -881,7 +887,7 @@
                         loading={loading} 
                         onAddCase={() => {setView('new_case'); setCurrentCase(null);}} 
                         onEditCase={(c) => { setCurrentCase(c); setView('edit_case'); }}
-                        onReport={(type) => alert(`ฟังก์ชัน ${type === 'refer' ? 'ส่งต่อผู้ป่วย' : 'รายงาน ADR'} จะถูกเพิ่มในภายหลัง`)}
+                        onReport={(type) => alert(`ฟังก์ชัน ${type === 'refer' ? 'ส่งต่อผู้ป่วย' : 'รายงาน ADR'} จะถูกพัฒนาในภายหลัง`)}
                     />
                 );
             }
@@ -910,7 +916,7 @@
                                 setView('dashboard'); 
                                 setCurrentCase(null); 
                                 // Show final alert with Drive link after print dialog closes
-                                alert(`✅ การพิมพ์รายงานเสร็จสมบูรณ์\n\nไฟล์ PDF ที่บันทึกไว้ (จากการสั่งพิมพ์) ต้องถูกอัปโหลดด้วยตนเองไปยัง Google Drive:\n\nคลิกที่นี่เพื่ออัปโหลดไฟล์: ${DRIVE_UPLOAD_FOLDER_URL}`);
+                                alert(`เสร็จสิ้น อย่าลืมอัพโหลดเคสต่อไป`);
                             }} 
                         />
                     )}
