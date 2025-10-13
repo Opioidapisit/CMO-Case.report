@@ -5,7 +5,7 @@
 const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbx5uCN4yBvmvOSvcnylRzTqv0mSpbTM5_ADzr-rSnxE4TITwuwkQoPmYX8MLt7Y8DVBOA/exec'; 
 
 // =====================================================================
-// 1. UTILITY FUNCTIONS
+// 1. UTILITY FUNCTIONS (เหมือนเดิม)
 // =====================================================================
 
 /**
@@ -19,16 +19,13 @@ const sendDataToApi = async (data, action, status) => {
     data.action = action;
     data.status = status;
     
-    // แปลงข้อมูลฟอร์มเป็น JSON
     const payload = JSON.stringify(data);
     
-    // NOTE: สามารถเพิ่ม Loading Spinner UI ที่นี่
     document.body.classList.add('loading'); 
 
     try {
         const response = await fetch(WEB_APP_URL, {
             method: 'POST',
-            // Apps Script ต้องการ Content-Type เป็น text/plain
             headers: {
                 'Content-Type': 'text/plain;charset=utf-8', 
             },
@@ -41,8 +38,7 @@ const sendDataToApi = async (data, action, status) => {
             const result = await response.json();
             if (result.status === 'success') {
                 alert(`สำเร็จ! ${result.message}`);
-                // นำผู้ใช้กลับไปหน้า Dashboard หลังบันทึกสำเร็จ
-                window.location.href = 'index.html'; 
+                window.location.href = './index.html'; // ใช้นำหน้าด้วย ./ เพื่อความชัวร์
             } else {
                 alert(`เกิดข้อผิดพลาดในการบันทึก: ${result.message}`);
             }
@@ -63,6 +59,7 @@ const sendDataToApi = async (data, action, status) => {
  * ฟังก์ชันสำหรับดึงข้อมูลเคสทั้งหมดจาก Apps Script
  */
 const fetchAllCases = async () => {
+    // ... (โค้ดดึงข้อมูลเหมือนเดิม)
     try {
         const response = await fetch(WEB_APP_URL + '?action=getCaseList', {
             method: 'GET',
@@ -71,7 +68,6 @@ const fetchAllCases = async () => {
         if (response.ok) {
             const result = await response.json();
             if (result.status === 'success') {
-                // จัดการข้อมูลให้สามารถใช้ในตารางได้
                 renderCaseTable(result.data);
             } else {
                 console.error("API Error:", result.message);
@@ -91,6 +87,7 @@ const fetchAllCases = async () => {
 // =====================================================================
 
 const renderCaseTable = (cases) => {
+    // ... (โค้ด render table เหมือนเดิม)
     const tableBody = document.getElementById('case-table-body');
     tableBody.innerHTML = ''; 
     
@@ -100,7 +97,7 @@ const renderCaseTable = (cases) => {
     }
 
     cases.forEach(c => {
-        // อ้างอิงคอลัมน์จาก Sheet (A=0, B=1, ...): c[4]=Patient_Name, c[5]=Tel, c[11]=Chief_Complaints, c[17]=Status, c[2]=Branch
+        // ... (Logic การแสดงผลตารางเหมือนเดิม)
         const statusText = c[17];
         const statusClass = statusText === 'รอติดตาม' 
             ? 'bg-orange-100 text-orange-800' 
@@ -110,7 +107,7 @@ const renderCaseTable = (cases) => {
         row.classList.add('hover:bg-indigo-50/50', 'cursor-pointer');
         row.innerHTML = `
             <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">
-                <a href="case_form.html?case_id=${c[1]}" class="text-indigo-600 hover:text-indigo-800">${c[4]}</a>
+                <a href="./case_form.html?case_id=${c[1]}" class="text-indigo-600 hover:text-indigo-800">${c[4]}</a>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden sm:table-cell">${c[5] || '-'}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${c[11] ? c[11].split(';')[0] + '...' : 'N/A'}</td>
@@ -121,7 +118,7 @@ const renderCaseTable = (cases) => {
                 </span>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <a href="case_form.html?case_id=${c[1]}" class="text-indigo-600 hover:text-indigo-900">ดู/แก้ไข</a>
+                <a href="./case_form.html?case_id=${c[1]}" class="text-indigo-600 hover:text-indigo-900">ดู/แก้ไข</a>
             </td>
         `;
         tableBody.appendChild(row);
@@ -129,11 +126,11 @@ const renderCaseTable = (cases) => {
 };
 
 const handleDashboard = () => {
+    // แก้ไขตรงนี้: ใช้นำหน้าด้วย ./ เพื่อความชัวร์เรื่องพาธ
     document.getElementById('add-case-btn').addEventListener('click', () => {
-        window.location.href = 'case_form.html';
+        window.location.href = './case_form.html'; 
     });
     
-    // NOTE: ปุ่มส่งต่อ/ADR ยังไม่มีฟอร์มเฉพาะ
     document.getElementById('refer-patient-btn').addEventListener('click', () => {
          alert('ฟังก์ชัน "ส่งต่อผู้ป่วย" จะถูกเพิ่มในขั้นตอนถัดไป');
     });
@@ -146,7 +143,7 @@ const handleDashboard = () => {
 
 
 // =====================================================================
-// 3. FORM LOGIC (case_form.html)
+// 3. FORM LOGIC (case_form.html) (เหมือนเดิม)
 // =====================================================================
 
 const handleCaseForm = () => {
@@ -154,11 +151,9 @@ const handleCaseForm = () => {
     const closeCaseBtn = document.getElementById('close-case-btn');
     const cancelCaseBtn = document.getElementById('cancel-case-btn');
 
-    // Listener สำหรับปุ่ม "บันทึกเคส" (Submit form)
     form.addEventListener('submit', (e) => {
         e.preventDefault();
         
-        // 1. ตรวจสอบ Checkbox อาการสำคัญ (ต้องเลือกอย่างน้อย 1 รายการ)
         const selectedComplaints = Array.from(form.querySelectorAll('input[name="chief_complaints"]:checked')).map(cb => cb.value);
         if (selectedComplaints.length === 0) {
             alert('กรุณาเลือกอาการสำคัญอย่างน้อย 1 รายการ');
@@ -168,28 +163,21 @@ const handleCaseForm = () => {
         const formData = new FormData(form);
         const data = {};
         
-        // 2. ดึงข้อมูลทั้งหมดจากฟอร์ม
         formData.forEach((value, key) => {
-             // เราข้าม chief_complaints เพราะจะจัดการแยก
             if (key !== 'chief_complaints') {
                  data[key] = value;
             }
         });
-        
-        // 3. จัดการ Checkbox: ดึงค่าทั้งหมดที่ถูกเลือกมาต่อกันด้วย "; "
         data.chief_complaints = selectedComplaints.join('; ');
         
-        // 4. ส่งข้อมูลไปยัง API ด้วย action 'saveCase' และ status 'รอติดตาม'
         sendDataToApi(data, 'saveCase', 'รอติดตาม');
     });
 
-    // Listener สำหรับปุ่ม "ปิดเคส"
     closeCaseBtn.addEventListener('click', () => {
         if (!confirm('ยืนยันการปิดเคสหรือไม่? ระบบจะทำการ Export PDF และตั้งสถานะเป็น "ปิดเคสแล้ว"')) {
             return;
         }
         
-        // ดึงข้อมูลฟอร์มและจัดการ Checkbox เช่นเดียวกับปุ่มบันทึก
         const form = document.getElementById('case-report-form');
         const formData = new FormData(form);
         const data = {};
@@ -202,15 +190,12 @@ const handleCaseForm = () => {
         });
         data.chief_complaints = selectedComplaints.join('; ');
 
-        // ส่ง action 'closeCase' ไปยัง Apps Script 
         sendDataToApi(data, 'closeCase', 'ปิดเคสแล้ว'); 
     });
     
-    // Listener สำหรับปุ่ม "ยกเลิกเคส"
     cancelCaseBtn.addEventListener('click', () => {
         if (confirm('ยืนยันการยกเลิกเคสหรือไม่? ระบบจะนำคุณกลับไปยังหน้าหลัก')) {
-            // ในขั้นตอนนี้ เราจะกลับไปหน้าหลัก (ยังไม่ได้ implement logic ลบเคสเก่า)
-            window.location.href = 'index.html'; 
+            window.location.href = './index.html'; // ใช้นำหน้าด้วย ./
         }
     });
 };
@@ -220,10 +205,12 @@ const handleCaseForm = () => {
 // 4. ENTRY POINT
 // =====================================================================
 document.addEventListener('DOMContentLoaded', () => {
+    const path = window.location.pathname;
+    
     // ตรวจสอบว่ากำลังทำงานอยู่บนหน้าไหน
-    if (window.location.pathname.includes('case_form.html')) {
+    if (path.includes('case_form.html')) {
         handleCaseForm();
-    } else if (window.location.pathname.includes('index.html') || window.location.pathname === '/' || window.location.pathname === '') {
+    } else { // รวมถึง index.html หรือ root path
         handleDashboard();
     }
 });
