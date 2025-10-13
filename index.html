@@ -14,9 +14,22 @@
             font-family: 'Kanit', sans-serif;
             background-color: #f7f9fb;
         }
-        /* Custom class for Kanit font, used within the React app */
         .font-kanit {
             font-family: 'Kanit', sans-serif;
+        }
+        /* -- PRINT STYLES (for PDF generation) -- */
+        @media print {
+            body * { visibility: hidden; }
+            #print-area, #print-area * { visibility: visible; }
+            #print-area { 
+                position: absolute; 
+                left: 0; top: 0; 
+                width: 100%; 
+                margin: 0;
+                padding: 1cm; /* A4 Margin */
+            }
+            .no-print { display: none !important; }
+            .report-table td { page-break-inside: avoid; }
         }
     </style>
 </head>
@@ -25,7 +38,6 @@
 
     <!-- React and Babel Libraries -->
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
     <!-- Firebase Libraries (Compat versions for single-file HTML) -->
@@ -41,27 +53,21 @@
         const { useState, useEffect, useMemo } = React;
         
         // --- 1. FIREBASE CONFIGURATION (MANDATORY) ---
-        // !!! ข้อมูลนี้ต้องมาจาก Firebase Console ของคุณ !!!
         const USER_FIREBASE_CONFIG = {
-            // ⬇️ ข้อมูล Firebase Config ที่คุณได้จาก Console ⬇️
             apiKey: "AIzaSyB1ixH1epK4fnaLLbO10wsH_LTDDhraoyg",
             authDomain: "casereportcmo.firebaseapp.com",
             projectId: "casereportcmo",
             storageBucket: "casereportcmo.firebasestorage.app",
             messagingSenderId: "588025239095",
             appId: "1:588025239095:web:9d98aaf31e903546da91b2"
-            // ⬆️ ข้อมูล Firebase Config ที่คุณได้จาก Console ⬆️
         };
-        // ชื่อ ID สำหรับ Firestore Path (กำหนดเอง)
         const FIREBASE_PATH_APP_ID = 'trang-case-system'; 
-
-        // =======================================================================================
-        // !!! APPS SCRIPT DEPLOYMENT URL (สำหรับการบันทึกข้อมูลลง Sheet และสร้าง PDF) !!!
-        // =======================================================================================
-        const APPS_SCRIPT_RECORD_URL = 'https://script.google.com/macros/s/AKfycbxvb717wxqHcUZVOi8xMSs-ICDa7DydwtDsfwHLMoF-F1V_eeCyI89ZDd19uzkP3rifeg/exec'; 
-        // =======================================================================================
         
-        // --- Branch and Complaints Data ---
+        // --- APPS SCRIPT RECORD URL (Used for Sheet/PDF Update) ---
+        const APPS_SCRIPT_RECORD_URL = 'https://script.google.com/macros/s/AKfycbxvb717wxqHcUZVOi8xMSs-ICDa7DydwtDsfwHLMoF-F1V_eeCyI89ZDd19uzkP3rifeg/exec'; 
+        const DRIVE_UPLOAD_FOLDER_URL = 'https://drive.google.com/drive/u/0/folders/1LXVLw5lorx7lrD4mfbTw39BscTIVdNOd';
+        
+        // --- Constants ---
         const branchMap = {
             '1': 'สาขา 1 นาเมืองเพชร', '2': 'สาขา 2 ที่วัง', '3': 'สาขา 3 คลองเต็ง',
             '4': 'สาขา 4 นาโยง', '5': 'สาขา 5 ท่ากลาง', '6': 'สาขา 6 รัษฎา',
@@ -135,21 +141,18 @@
             const [isAuthReady, setIsAuthReady] = useState(false);
 
             useEffect(() => {
-                // Check if config is present and stop if not (avoids app crashing on GitHub)
                 if (!USER_FIREBASE_CONFIG.apiKey || USER_FIREBASE_CONFIG.apiKey === "YOUR_API_KEY") {
-                    setIsAuthReady(true); // Set ready to show error message
+                    setIsAuthReady(true);
                     return;
                 }
 
                 try {
-                    // Initialize Firebase with user's config
                     firebase.initializeApp(USER_FIREBASE_CONFIG);
                     const firestore = getFirestoreCompat();
                     const authInstance = getAuthCompat();
                     setDb(firestore);
                     setAuth(authInstance);
 
-                    // Sign in Anonymously
                     const unsubscribe = authInstance.onAuthStateChanged(async (user) => {
                         if (!user) {
                             await authInstance.signInAnonymously();
@@ -175,7 +178,6 @@
             useEffect(() => {
                 if (!db || !isAuthReady || !db.collection) return;
 
-                // Path: /artifacts/trang-case-system/public/data/cases
                 const caseCollectionRef = getCollectionCompat(db, 'artifacts', FIREBASE_PATH_APP_ID, 'public/data/cases');
                 
                 const unsubscribe = caseCollectionRef.orderBy('timestamp', 'desc').onSnapshot((snapshot) => {
@@ -184,7 +186,6 @@
                         return {
                             id: doc.id,
                             ...data,
-                            // Format timestamp for display
                             timestamp: data.timestamp?.toDate ? data.timestamp.toDate().toLocaleDateString('th-TH') : 'N/A',
                         };
                     });
@@ -206,6 +207,154 @@
         // 3. COMPONENTS
         // ======================================================================
 
+        // --- F. Report Print View (CORS-FREE PRINTING) ---
+        const ReportPrintView = ({ caseData, onHide, onPostPrint }) => {
+            
+            // Function to handle the actual print command
+            useEffect(() => {
+                // Ensure the print dialogue opens immediately after component renders
+                const timer = setTimeout(() => {
+                    window.print();
+                    onPostPrint(); // Trigger the post-print action (showing link/redirect)
+                    onHide();      // Close the print view
+                }, 500);
+                return () => clearTimeout(timer);
+            }, [onHide, onPostPrint]);
+
+            // Convert string date (YYYY-MM-DD) to Thai display date
+            const formatDate = (dateString) => {
+                if (!dateString) return '-';
+                try {
+                    return new Date(dateString + 'T00:00:00').toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
+                } catch (e) {
+                    return dateString;
+                }
+            };
+            
+            // Map chief complaints back to a displayable format
+            const chiefComplaintsText = (Array.isArray(caseData.chief_complaints) 
+                ? caseData.chief_complaints.join('; ') 
+                : caseData.chief_complaints) || '';
+
+
+            // --- Actual Print Template (Table Layout) ---
+            return ReactDOM.createPortal(
+                <div id="print-area" className="p-8 font-kanit text-gray-900 bg-white">
+                    <h1 className="text-xl font-bold text-center mb-4">แบบรายงานการรักษา ร้านยาคลินิคยา มอ ออ</h1>
+                    
+                    <table className="w-full report-table border-collapse border border-gray-500 text-sm">
+                        {/* Section 1: Header */}
+                        <thead>
+                            <tr className="bg-gray-100">
+                                <td colSpan="2" className="p-2 border border-gray-500 font-semibold">
+                                    สาขาที่รายงาน: {branchMap[caseData.branch]}
+                                </td>
+                                <td colSpan="2" className="p-2 border border-gray-500 font-semibold">
+                                    วันที่รายงาน: {caseData.timestamp}
+                                </td>
+                            </tr>
+                            <tr className="bg-blue-50">
+                                <td colSpan="4" className="p-2 border border-gray-500 font-bold">
+                                    ส่วนที่ 1 ข้อมูลทั่วไปของผู้ใช้บริการ
+                                </td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colSpan="2" className="p-2 border border-gray-500">
+                                    ชื่อ - สกุล: {caseData.patient_name}
+                                </td>
+                                <td colSpan="2" className="p-2 border border-gray-500">
+                                    โทรศัพท์: {caseData.tel || '-'}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td className="p-2 border border-gray-500" style={{width: '25%'}}>
+                                    น้ำหนัก: {caseData.weight || '-'} กก.
+                                </td>
+                                <td className="p-2 border border-gray-500" style={{width: '25%'}}>
+                                    ส่วนสูง: {caseData.height || '-'} ซม.
+                                </td>
+                                <td className="p-2 border border-gray-500" colSpan="2">
+                                    อายุ: {caseData.age || '-'} ปี
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colSpan="4" className="p-2 border border-gray-500">
+                                    โรคประจำตัว: {caseData.chronic_disease || '-'}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colSpan="4" className="p-2 border border-gray-500">
+                                    ประวัติการแพ้ยา: {caseData.drug_allergy || '-'}
+                                </td>
+                            </tr>
+
+                            {/* Section 2: Treatment */}
+                            <tr className="bg-blue-50">
+                                <td colSpan="4" className="p-2 border border-gray-500 font-bold">
+                                    ส่วนที่ 2 การรักษา
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colSpan="4" className="p-2 border border-gray-500">
+                                    <span className="font-semibold">อาการสำคัญ:</span> 
+                                    <div className="whitespace-pre-wrap">{chiefComplaintsText.replace(/; /g, '\n')}</div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colSpan="4" className="p-2 border border-gray-500 h-20 align-top">
+                                    <span className="font-semibold">ข้อมูลจากการซักประวัติ:</span> 
+                                    <div className="whitespace-pre-wrap">{caseData.history || '-'}</div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colSpan="4" className="p-2 border border-gray-500">
+                                    <span className="font-semibold">การวินิจฉัยเบื้องต้น:</span> 
+                                    <div>{caseData.diagnosis || '-'}</div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colSpan="4" className="p-2 border border-gray-500 h-20 align-top">
+                                    <span className="font-semibold">การรักษา (ใช้ยาและไม่ใช้ยา):</span> 
+                                    <div className="whitespace-pre-wrap">{caseData.treatment || '-'}</div>
+                                </td>
+                            </tr>
+
+                            {/* Section 3: Follow Up */}
+                            <tr className="bg-blue-50">
+                                <td colSpan="4" className="p-2 border border-gray-500 font-bold">
+                                    ส่วนที่ 3 การติดตาม
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colSpan="4" className="p-2 border border-gray-500">
+                                    <span className="font-semibold">วันที่ติดตาม:</span> {formatDate(caseData.follow_up_date)}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colSpan="4" className="p-2 border border-gray-500 h-20 align-top">
+                                    <span className="font-semibold">ผลการติดตาม:</span> 
+                                    <div className="whitespace-pre-wrap">{caseData.follow_up_result || '-'}</div>
+                                </td>
+                            </tr>
+                            
+                            {/* Signature Line */}
+                            <tr>
+                                <td colSpan="4" className="p-4 text-right">
+                                    <p className="mt-8">ลงชื่อ..................................................</p>
+                                    <p>(เภสัชกร/ผู้รายงาน)</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                </div>,
+                document.body
+            );
+        };
+
+
         // --- A. Case Report Form Component ---
         const CaseForm = ({ initialCase = null, onSave, onCancel, onDelete, onGeneratePDF }) => {
             const initialData = initialCase ? initialCase : defaultFormData;
@@ -213,6 +362,12 @@
             const [formData, setFormData] = useState(initialData);
             const [isSubmitting, setIsSubmitting] = useState(false);
             const isEditMode = initialCase !== null;
+
+            // --- Handler for "Back to Dashboard" button ---
+            const handleBackToDashboard = (e) => {
+                e.preventDefault();
+                onCancel();
+            };
 
             useEffect(() => {
                 if (isEditMode) {
@@ -257,7 +412,6 @@
                     return;
                 }
                 
-                // Block double submit
                 if (isSubmitting) return;
                 setIsSubmitting(true);
 
@@ -268,15 +422,27 @@
                 };
                 
                 if (newStatus === 'ปิดเคสแล้ว') {
-                    onGeneratePDF(finalData, isEditMode);
+                    // Ask for print confirmation
+                    const confirmPrint = confirm("บันทึกสถานะ 'ปิดเคสแล้ว' เรียบร้อย ต้องการพิมพ์รายงานทันทีหรือไม่? (กด OK เพื่อพิมพ์/บันทึก PDF)");
+                    
+                    // If confirmed, save to Firebase and trigger print
+                    onSave(finalData, isEditMode, confirmPrint);
                 } else {
                     onSave(finalData, isEditMode);
-                    setIsSubmitting(false); // Only set false here for non-PDF save
+                    setIsSubmitting(false);
                 }
             };
 
             return (
                 <main className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+                    {/* --- New Back Button --- */}
+                    <button onClick={handleBackToDashboard}
+                            className="text-indigo-600 hover:text-indigo-800 text-sm font-semibold flex items-center mb-4">
+                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                        กลับหน้าหลัก
+                    </button>
+                    {/* --- End New Back Button --- */}
+
                     <div className="bg-white p-8 rounded-xl shadow-lg">
                         <h1 className="text-2xl font-semibold text-gray-900 mb-6 border-b pb-2">
                             {isEditMode ? `แก้ไขเคส: ${formData.patient_name}` : 'บันทึกเคสใหม่'}
@@ -408,11 +574,11 @@
                                     <span className="text-lg">💾</span> บันทึก/พักเคส (สถานะ: รอติดตาม)
                                 </button>
 
-                                {/* 2. ปิดเคส (ปิดเคสแล้ว) - PDF FLOW */}
+                                {/* 2. ปิดเคส (ปิดเคสแล้ว) - PRINT FLOW (CORS-FREE) */}
                                 <button type="button" onClick={(e) => handleSubmit(e, 'ปิดเคสแล้ว')}
                                         disabled={isSubmitting}
                                         className={`flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition duration-150 ease-in-out ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                                    <span className="text-lg">🖨️</span> ปิดเคส &amp; ออกรายงาน (สถานะ: ปิดเคสแล้ว)
+                                    <span className="text-lg">🖨️</span> ปิดเคส &amp; ออกรายงาน (Print)
                                 </button>
                                 
                                 {/* 3. ยกเลิก/ลบเคส */}
@@ -437,54 +603,7 @@
         };
 
 
-        // --- C. Print Modal Component ---
-        const PrintModal = ({ show, onHide, htmlContent }) => {
-            if (!show) return null;
-
-            const handlePrint = () => {
-                const printWindow = window.open('', '_blank', 'width=800,height=600');
-                if (printWindow) {
-                    printWindow.document.write(htmlContent);
-                    printWindow.document.close();
-                    printWindow.focus();
-                    
-                    printWindow.onload = function() {
-                        printWindow.print();
-                        onHide();
-                    };
-                } else {
-                    alert('เบราว์เซอร์บล็อกการเปิดหน้าต่างพิมพ์ กรุณาอนุญาต Pop-ups');
-                    onHide();
-                }
-            };
-
-            return (
-                <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-lg shadow-2xl w-full max-w-lg">
-                        <div className="p-6">
-                            <h3 className="text-xl font-bold text-green-700 mb-4">✅ ปิดเคสเรียบร้อยและออกรายงาน</h3>
-                            <p className="text-gray-700 mb-6">
-                                ระบบได้อัปเดตสถานะและบันทึกข้อมูลใน Google Sheet แล้ว <br/>
-                                กรุณากด **"พิมพ์รายงาน"** เพื่อบันทึกเป็น PDF หรือพิมพ์เอกสาร
-                            </p>
-                            <div className="flex justify-between space-x-4">
-                                <button onClick={onHide}
-                                        className="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg transition">
-                                    ปิด (กลับหน้าหลัก)
-                                </button>
-                                <button onClick={handlePrint}
-                                        className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg transition">
-                                    🖨️ พิมพ์รายงาน (หรือบันทึกเป็น PDF)
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            );
-        };
-
-
-        // --- D. Dashboard Component (Unchanged) ---
+        // --- D. Dashboard Component ---
         const Dashboard = ({ cases, loading, onAddCase, onEditCase, onReport }) => {
             
             const [searchTerm, setSearchTerm] = useState('');
@@ -500,8 +619,6 @@
                     // Always show 'รอติดตาม' first
                     if (a.status === 'รอติดตาม' && b.status !== 'รอติดตาม') return -1;
                     if (a.status !== 'รอติดตาม' && b.status === 'รอติดตาม') return 1;
-                    // Then sort by date descending (most recent first)
-                    // Note: Firebase timestamp object comparison might need refinement in real use case
                     return (b.timestamp || '').localeCompare(a.timestamp || ''); 
                 });
             }, [cases, searchTerm]);
@@ -617,14 +734,13 @@
             
             const [view, setView] = useState('dashboard');
             const [currentCase, setCurrentCase] = useState(null); 
-            const [showPrintModal, setShowPrintModal] = useState(false);
-            const [printHtml, setPrintHtml] = useState('');
+            const [showPrintView, setShowPrintView] = useState(false); 
             const [isSaving, setIsSaving] = useState(false);
             
             // Check if config is present before rendering anything
              if (!isAuthReady && (!USER_FIREBASE_CONFIG.apiKey || USER_FIREBASE_CONFIG.apiKey === "YOUR_API_KEY")) {
                  return (
-                     <div className="p-12 text-center bg-white m-12 rounded-lg shadow-xl">
+                     <div className="p-12 text-center bg-white m-12 rounded-lg shadow-xl font-kanit">
                         <h1 className="text-red-600 text-3xl font-bold">🛑 Firebase Configuration Error</h1>
                         <p className="text-lg text-gray-700">
                             เว็บไซต์หยุดทำงานเนื่องจาก **Firebase Configuration** ขาดหายหรือยังไม่ได้แทนที่
@@ -634,8 +750,8 @@
              }
 
 
-            // Function to handle Firestore Save/Update
-            const handleSave = async (caseData, isEdit) => {
+            // Function to handle Firebase Save/Update
+            const handleSave = async (caseData, isEdit, shouldPrint = false) => {
                 if (!db || !userId) {
                     alert('ระบบยังไม่พร้อม: กรุณารอสักครู่');
                     return;
@@ -645,20 +761,37 @@
                 const caseCollectionRef = getCollectionCompat(db, 'artifacts', FIREBASE_PATH_APP_ID, 'public/data/cases');
 
                 try {
+                    let docId = caseData.id;
                     if (isEdit) {
+                        // 1. UPDATE status in Firebase
                         const docRef = getDocCompat(db, 'artifacts', FIREBASE_PATH_APP_ID, 'public/data/cases', caseData.id);
                         const { id, timestamp, ...dataToUpdate } = caseData; 
                         await docRef.update(dataToUpdate);
                         alert(`อัปเดตเคส ${caseData.patient_name} สำเร็จ`);
                     } else {
-                        await caseCollectionRef.add({
+                        // 1. ADD new case to Firebase
+                        const newDocRef = await caseCollectionRef.add({
                             ...caseData,
                             timestamp: serverTimestampCompat(),
                             userId: userId, 
                         });
+                        docId = newDocRef.id;
                         alert(`บันทึกเคสใหม่ ${caseData.patient_name} เป็นสถานะ "รอติดตาม" สำเร็จ`);
                     }
-                    if (caseData.status !== 'ปิดเคสแล้ว') { 
+                    
+                    if (shouldPrint) {
+                        // 2. Trigger Apps Script Record/PDF (for Google Sheet update/Drive upload)
+                        await triggerAppsScriptRecord({ ...caseData, id: docId, status: 'ปิดเคสแล้ว' }, isEdit);
+                        
+                        // 3. Show Print View
+                        // Ensure we use the latest data if possible, or fallback to the saved data
+                        const updatedCase = cases.find(c => c.id === docId) || { ...caseData, id: docId, timestamp: new Date().toLocaleDateString('th-TH') };
+                        setCurrentCase(updatedCase);
+                        setShowPrintView(true);
+
+                    }
+                    
+                    if (!shouldPrint) { 
                         setView('dashboard');
                         setCurrentCase(null);
                     }
@@ -670,25 +803,18 @@
                 }
             };
             
-            // Function to handle PDF Generation (Apps Script POST)
-            const handleCloseCaseAndGeneratePDF = async (caseData, isEditMode) => {
-                 if (!db || !userId) return;
-                 if (isSaving) return;
-                 
-                 // 1. Update Firebase Status First
-                 // The actual status update happens inside handleSave, but we need the data saved first
-                 await handleSave(caseData, isEditMode);
-
-                setIsSaving(true);
+            // Function to handle Apps Script POST (For Record/PDF ONLY)
+            const triggerAppsScriptRecord = async (caseData, isEdit) => {
+                if (APPS_SCRIPT_RECORD_URL.includes('YOUR_DEPLOYED_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE')) {
+                    alert('⚠️ ไม่สามารถบันทึกเข้า Google Sheet/Drive ได้: กรุณาตั้งค่า APPS_SCRIPT_RECORD_URL');
+                    return;
+                }
                 
                 try {
-                    // 2. Prepare Data for Apps Script (must send the final ID)
                     const caseDataForScript = { 
                         ...caseData, 
-                        // Apps Script needs the ID to update the correct row if editing
-                        id: caseData.id || new Date().getTime().toString(), // Use current timestamp if new case
-                        // Add an indicator to show which case type this is
-                        caseType: 'case_report' 
+                        // Apps Script requires simple string ID and status
+                        isEdit: isEdit 
                     }; 
                     
                     const response = await fetch(APPS_SCRIPT_RECORD_URL, {
@@ -704,40 +830,15 @@
                     const result = await response.json();
 
                     if (result.success) {
-                        // 3. Show the print modal (Since Apps Script now handles PDF upload)
-                        // We will show a success message and allow printing of the HTML report data
-                        alert(result.message);
-
-                        // Since we cannot get the PDF file path back easily, we will simulate the print modal
-                        // or provide a link to the Google Drive folder if available.
-                        
-                        // Use case data to generate a simple HTML for the local print dialogue
-                        const reportHtml = `
-                        <html><head><style>@page { size: A4; margin: 1in; } body { font-family: 'Kanit', sans-serif; }</style></head>
-                        <body>
-                            <h2 style="text-align: center;">รายงานสรุปเคส (อัปโหลดขึ้น Drive แล้ว)</h2>
-                            <p><strong>ผู้ป่วย:</strong> ${caseData.patient_name}</p>
-                            <p><strong>สาขา:</strong> ${branchMap[caseData.branch]}</p>
-                            <p><strong>สถานะ:</strong> ปิดเคสแล้ว</p>
-                            <p><strong>วันที่:</strong> ${new Date().toLocaleDateString('th-TH')}</p>
-                            <p style="margin-top: 20px;">กรุณากด Ctrl+P เพื่อบันทึกเป็น PDF หรือพิมพ์รายงาน</p>
-                        </body></html>
-                        `;
-
-                        setPrintHtml(reportHtml);
-                        setShowPrintModal(true);
-                        
+                        console.log("Apps Script Record/PDF Success:", result.message);
                     } else {
                         throw new Error(result.message || 'Apps Script reported an error.');
                     }
 
                 } catch (e) {
-                    console.error("Record/PDF Generation Error:", e);
-                    alert(`เกิดข้อผิดพลาดในการบันทึก/ออกรายงาน: ${e.message}. ข้อมูลหลักถูกบันทึกใน Firebase แล้ว (สถานะ: ปิดเคสแล้ว)`);
-                    setView('dashboard');
-                    setCurrentCase(null);
-                } finally {
-                    setIsSaving(false);
+                    console.error("Apps Script Record/PDF Error:", e);
+                    // Show soft error: data is saved in Firebase, but Google Sheet/Drive failed
+                    alert(`แจ้งเตือน: การบันทึกข้อมูลเข้า Google Sheet และสร้าง PDF ล้มเหลว (${e.message}) ข้อมูลหลักถูกบันทึกใน Firebase แล้ว.`);
                 }
             };
 
@@ -769,7 +870,7 @@
                         onSave={handleSave} 
                         onCancel={() => { setView('dashboard'); setCurrentCase(null); }} 
                         onDelete={handleDelete}
-                        onGeneratePDF={handleCloseCaseAndGeneratePDF}
+                        onGeneratePDF={() => {}} // No longer needed
                     />
                 );
             } else { // 'dashboard' view
@@ -786,7 +887,7 @@
 
             return (
                 <div className="min-h-screen bg-gray-100 font-kanit">
-                    <header className="bg-white shadow-md sticky top-0 z-10">
+                    <header className="bg-white shadow-md sticky top-0 z-10 no-print">
                         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col justify-center items-center text-center">
                             <h1 className="text-3xl font-semibold text-gray-900 tracking-tight">
                                 ระบบบันทึกการรักษาและส่งต่อผู้ป่วย คลินิคยา มอ ออ จังหวัดตรัง
@@ -798,24 +899,32 @@
                     {/* Main Content */}
                     {content}
                     
-                    {/* Modal for Print/PDF */}
-                    <PrintModal 
-                        show={showPrintModal} 
-                        onHide={() => { setShowPrintModal(false); setView('dashboard'); setCurrentCase(null); }} 
-                        htmlContent={printHtml} 
-                    />
+                    {/* Print View Component (shows up only when printing) */}
+                    {showPrintView && currentCase && (
+                        <ReportPrintView 
+                            caseData={currentCase} 
+                            onHide={() => {}} // Hiding controlled by useEffect
+                            onPostPrint={() => { 
+                                setShowPrintView(false); 
+                                setView('dashboard'); 
+                                setCurrentCase(null); 
+                                // Show final alert with Drive link after print dialog closes
+                                alert(`✅ การพิมพ์รายงานเสร็จสมบูรณ์\n\nไฟล์ PDF ที่บันทึกไว้ (จากการสั่งพิมพ์) ต้องถูกอัปโหลดด้วยตนเองไปยัง Google Drive:\n\nคลิกที่นี่เพื่ออัปโหลดไฟล์: ${DRIVE_UPLOAD_FOLDER_URL}`);
+                            }} 
+                        />
+                    )}
 
                     {/* Saving/Loading Overlay */}
                     {isSaving && (
-                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
+                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] no-print">
                             <div className="bg-white p-6 rounded-lg shadow-2xl flex items-center">
                                 <LoadingSpinner />
-                                <span className="ml-4 text-gray-700 font-semibold">กำลังบันทึกและออกรายงาน...</span>
+                                <span className="ml-4 text-gray-700 font-semibold">กำลังบันทึกและสร้างรายงาน...</span>
                             </div>
                         </div>
                     )}
 
-                    <footer className="mt-12 text-center text-gray-500 text-sm py-4 border-t">
+                    <footer className="mt-12 text-center text-gray-500 text-sm py-4 border-t no-print">
                         Case Management System (Powered by React &amp; Firebase)
                     </footer>
                 </div>
