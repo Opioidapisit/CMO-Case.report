@@ -2,7 +2,7 @@
 // ** CONFIGURATION **
 // ** ต้องแทนที่ด้วย Web App URL ที่คุณคัดลอกมาจาก Apps Script Deployment **
 // =====================================================================
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbx5uCN4yBvmvOSvcnylRzTqv0mSpbTM5_ADzr-rSnxE4TITwuwkQoPmYX8MLt7Y8DVBOA/exec'; 
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbylGBTfHuOvucX0qoYI8UxLYQl1OiGaHxvEdJI1T88kT9dL5RhU3rHPifQSl3_Du5nM/exec'; 
 
 // =====================================================================
 // 1. UTILITY FUNCTIONS (เหมือนเดิม)
@@ -214,3 +214,4 @@ document.addEventListener('DOMContentLoaded', () => {
         handleDashboard();
     }
 });
+
