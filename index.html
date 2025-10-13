@@ -28,7 +28,7 @@
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
-    <!-- Firebase Libraries (Using Compat versions for simplicity in single-file HTML) -->
+    <!-- Firebase Libraries (Compat versions for single-file HTML) -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
@@ -40,28 +40,28 @@
 
         const { useState, useEffect, useMemo } = React;
         
-        // --- 1. FIREBASE CONFIGURATION (MANDATORY TO REPLACE) ---
-        // !!! คุณต้องนำ Firebase Config Object ของคุณมาวางที่นี่ !!!
+        // --- 1. FIREBASE CONFIGURATION (MANDATORY) ---
+        // !!! ข้อมูลนี้ต้องมาจาก Firebase Console ของคุณ !!!
         const USER_FIREBASE_CONFIG = {
-            // ⬇️ นำข้อมูลของคุณมาใส่ที่นี่ ⬇️
+            // ⬇️ ข้อมูล Firebase Config ที่คุณได้จาก Console ⬇️
             apiKey: "AIzaSyB1ixH1epK4fnaLLbO10wsH_LTDDhraoyg",
             authDomain: "casereportcmo.firebaseapp.com",
             projectId: "casereportcmo",
             storageBucket: "casereportcmo.firebasestorage.app",
             messagingSenderId: "588025239095",
             appId: "1:588025239095:web:9d98aaf31e903546da91b2"
-            // ⬆️ นำข้อมูลของคุณมาใส่ที่นี่ ⬆️
+            // ⬆️ ข้อมูล Firebase Config ที่คุณได้จาก Console ⬆️
         };
-        // ใช้ชื่อ ID สำหรับ Firestore Path (กำหนดเอง)
+        // ชื่อ ID สำหรับ Firestore Path (กำหนดเอง)
         const FIREBASE_PATH_APP_ID = 'trang-case-system'; 
 
         // =======================================================================================
-        // !!! APPS SCRIPT DEPLOYMENT URL (สำหรับการสร้างรายงาน PDF/HTML) !!!
+        // !!! APPS SCRIPT DEPLOYMENT URL (สำหรับการบันทึกข้อมูลลง Sheet และสร้าง PDF) !!!
         // =======================================================================================
-        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyeZlzGLNmUtDkj5hgASnzNaQU0KUmLBFm-mVQULfxm1alRAP23_6MHbwxO0RZA2tTpYg/exec'; 
+        const APPS_SCRIPT_RECORD_URL = 'https://script.google.com/macros/s/AKfycbxvb717wxqHcUZVOi8xMSs-ICDa7DydwtDsfwHLMoF-F1V_eeCyI89ZDd19uzkP3rifeg/exec'; 
         // =======================================================================================
         
-        // --- Branch and Complaints Data (Unchanged) ---
+        // --- Branch and Complaints Data ---
         const branchMap = {
             '1': 'สาขา 1 นาเมืองเพชร', '2': 'สาขา 2 ที่วัง', '3': 'สาขา 3 คลองเต็ง',
             '4': 'สาขา 4 นาโยง', '5': 'สาขา 5 ท่ากลาง', '6': 'สาขา 6 รัษฎา',
@@ -135,9 +135,9 @@
             const [isAuthReady, setIsAuthReady] = useState(false);
 
             useEffect(() => {
+                // Check if config is present and stop if not (avoids app crashing on GitHub)
                 if (!USER_FIREBASE_CONFIG.apiKey || USER_FIREBASE_CONFIG.apiKey === "YOUR_API_KEY") {
-                    console.error("Firebase config is missing or incomplete. Please replace placeholders.");
-                    setIsAuthReady(true); // Stop loading, show error
+                    setIsAuthReady(true); // Set ready to show error message
                     return;
                 }
 
@@ -149,7 +149,7 @@
                     setDb(firestore);
                     setAuth(authInstance);
 
-                    // Sign in Anonymously as the user is running on a public page
+                    // Sign in Anonymously
                     const unsubscribe = authInstance.onAuthStateChanged(async (user) => {
                         if (!user) {
                             await authInstance.signInAnonymously();
@@ -175,15 +175,16 @@
             useEffect(() => {
                 if (!db || !isAuthReady || !db.collection) return;
 
-                // Use fixed path ID since we don't have global __app_id
+                // Path: /artifacts/trang-case-system/public/data/cases
                 const caseCollectionRef = getCollectionCompat(db, 'artifacts', FIREBASE_PATH_APP_ID, 'public/data/cases');
                 
-                const unsubscribe = caseCollectionRef.onSnapshot((snapshot) => {
+                const unsubscribe = caseCollectionRef.orderBy('timestamp', 'desc').onSnapshot((snapshot) => {
                     const caseList = snapshot.docs.map(doc => {
                         const data = doc.data();
                         return {
                             id: doc.id,
                             ...data,
+                            // Format timestamp for display
                             timestamp: data.timestamp?.toDate ? data.timestamp.toDate().toLocaleDateString('th-TH') : 'N/A',
                         };
                     });
@@ -210,6 +211,7 @@
             const initialData = initialCase ? initialCase : defaultFormData;
                 
             const [formData, setFormData] = useState(initialData);
+            const [isSubmitting, setIsSubmitting] = useState(false);
             const isEditMode = initialCase !== null;
 
             useEffect(() => {
@@ -254,6 +256,10 @@
                     onDelete(formData.id);
                     return;
                 }
+                
+                // Block double submit
+                if (isSubmitting) return;
+                setIsSubmitting(true);
 
                 const finalData = {
                     ...formData,
@@ -262,9 +268,10 @@
                 };
                 
                 if (newStatus === 'ปิดเคสแล้ว') {
-                    onGeneratePDF(finalData);
+                    onGeneratePDF(finalData, isEditMode);
                 } else {
                     onSave(finalData, isEditMode);
+                    setIsSubmitting(false); // Only set false here for non-PDF save
                 }
             };
 
@@ -396,25 +403,29 @@
                                 
                                 {/* 1. บันทึกเคส (รอติดตาม) */}
                                 <button type="button" onClick={(e) => handleSubmit(e, 'รอติดตาม')}
-                                        className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition duration-150 ease-in-out">
+                                        disabled={isSubmitting}
+                                        className={`flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition duration-150 ease-in-out ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}>
                                     <span className="text-lg">💾</span> บันทึก/พักเคส (สถานะ: รอติดตาม)
                                 </button>
 
-                                {/* 2. ปิดเคส (ปิดเคสแล้ว) - NEW PDF FLOW */}
+                                {/* 2. ปิดเคส (ปิดเคสแล้ว) - PDF FLOW */}
                                 <button type="button" onClick={(e) => handleSubmit(e, 'ปิดเคสแล้ว')}
-                                        className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition duration-150 ease-in-out">
+                                        disabled={isSubmitting}
+                                        className={`flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition duration-150 ease-in-out ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}>
                                     <span className="text-lg">🖨️</span> ปิดเคส &amp; ออกรายงาน (สถานะ: ปิดเคสแล้ว)
                                 </button>
                                 
                                 {/* 3. ยกเลิก/ลบเคส */}
                                 {isEditMode ? (
                                      <button type="button" onClick={(e) => handleSubmit(e, null, true)}
-                                        className="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition duration-150 ease-in-out">
+                                        disabled={isSubmitting}
+                                        className={`flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition duration-150 ease-in-out ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}>
                                         <span className="text-lg">🗑️</span> ลบเคส
                                      </button>
                                 ) : (
                                      <button type="button" onClick={onCancel}
-                                        className="flex-1 bg-gray-400 hover:bg-gray-500 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition duration-150 ease-in-out">
+                                        disabled={isSubmitting}
+                                        className={`flex-1 bg-gray-400 hover:bg-gray-500 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition duration-150 ease-in-out ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}>
                                         <span className="text-lg">❌</span> ยกเลิก (กลับหน้าหลัก)
                                      </button>
                                 )}
@@ -437,7 +448,6 @@
                     printWindow.document.close();
                     printWindow.focus();
                     
-                    // Use a slight delay to ensure content is rendered before printing
                     printWindow.onload = function() {
                         printWindow.print();
                         onHide();
@@ -454,7 +464,8 @@
                         <div className="p-6">
                             <h3 className="text-xl font-bold text-green-700 mb-4">✅ ปิดเคสเรียบร้อยและออกรายงาน</h3>
                             <p className="text-gray-700 mb-6">
-                                ข้อมูลเคสถูกบันทึกในสถานะ **"ปิดเคสแล้ว"** กรุณากดปุ่ม **"พิมพ์รายงาน"** เพื่อบันทึกเป็น PDF หรือพิมพ์เอกสาร
+                                ระบบได้อัปเดตสถานะและบันทึกข้อมูลใน Google Sheet แล้ว <br/>
+                                กรุณากด **"พิมพ์รายงาน"** เพื่อบันทึกเป็น PDF หรือพิมพ์เอกสาร
                             </p>
                             <div className="flex justify-between space-x-4">
                                 <button onClick={onHide}
@@ -482,15 +493,16 @@
                 const lowerCaseSearch = searchTerm.toLowerCase();
                 const filtered = cases.filter(c => 
                     c.patient_name.toLowerCase().includes(lowerCaseSearch) ||
-                    c.tel.includes(searchTerm)
+                    (c.tel && c.tel.includes(searchTerm))
                 );
 
                 return [...filtered].sort((a, b) => {
                     // Always show 'รอติดตาม' first
                     if (a.status === 'รอติดตาม' && b.status !== 'รอติดตาม') return -1;
                     if (a.status !== 'รอติดตาม' && b.status === 'รอติดตาม') return 1;
-                    // Then sort by ID/date descending (most recent first)
-                    return (b.id || '').localeCompare(a.id || ''); 
+                    // Then sort by date descending (most recent first)
+                    // Note: Firebase timestamp object comparison might need refinement in real use case
+                    return (b.timestamp || '').localeCompare(a.timestamp || ''); 
                 });
             }, [cases, searchTerm]);
 
@@ -613,10 +625,9 @@
              if (!isAuthReady && (!USER_FIREBASE_CONFIG.apiKey || USER_FIREBASE_CONFIG.apiKey === "YOUR_API_KEY")) {
                  return (
                      <div className="p-12 text-center bg-white m-12 rounded-lg shadow-xl">
-                        <h1 className="text-red-600 text-3xl font-bold mb-4">🛑 Firebase Configuration Error</h1>
+                        <h1 className="text-red-600 text-3xl font-bold">🛑 Firebase Configuration Error</h1>
                         <p className="text-lg text-gray-700">
-                            เว็บไซต์หยุดทำงานเนื่องจาก **Firebase Configuration** ขาดหายหรือยังไม่ได้แทนที่ <br/>
-                            กรุณาแก้ไขไฟล์ <code className="bg-gray-200 p-1 rounded">index.html</code> (บรรทัดที่ 49) ด้วยข้อมูล Firebase Config ของคุณ
+                            เว็บไซต์หยุดทำงานเนื่องจาก **Firebase Configuration** ขาดหายหรือยังไม่ได้แทนที่
                         </p>
                     </div>
                  );
@@ -638,6 +649,7 @@
                         const docRef = getDocCompat(db, 'artifacts', FIREBASE_PATH_APP_ID, 'public/data/cases', caseData.id);
                         const { id, timestamp, ...dataToUpdate } = caseData; 
                         await docRef.update(dataToUpdate);
+                        alert(`อัปเดตเคส ${caseData.patient_name} สำเร็จ`);
                     } else {
                         await caseCollectionRef.add({
                             ...caseData,
@@ -651,39 +663,35 @@
                         setCurrentCase(null);
                     }
                 } catch (e) {
-                    console.error("Error saving case:", e);
-                    alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล: โปรดตรวจสอบ Console');
+                    console.error("Error saving case to Firebase:", e);
+                    alert('เกิดข้อผิดพลาดในการบันทึกข้อมูลหลัก: โปรดตรวจสอบ Console');
                 } finally {
                     setIsSaving(false);
                 }
             };
             
-            // Function to handle PDF Generation and Firestore Update for closing a case
-            const handleCloseCaseAndGeneratePDF = async (caseData) => {
-                 if (!db || !userId) {
-                    alert('ระบบยังไม่พร้อม: กรุณารอสักครู่');
-                    return;
-                }
-                if (APPS_SCRIPT_URL.includes('YOUR_DEPLOYED_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE')) {
-                    alert('⚠️ กรุณาตั้งค่า APPS_SCRIPT_URL ในโค้ดก่อนจึงจะสามารถออกรายงานได้ (บันทึกสถานะ "ปิดเคสแล้ว" ในฐานข้อมูลแทน)');
-                    await handleSave(caseData, currentCase !== null);
-                    setView('dashboard');
-                    setCurrentCase(null);
-                    return;
-                }
+            // Function to handle PDF Generation (Apps Script POST)
+            const handleCloseCaseAndGeneratePDF = async (caseData, isEditMode) => {
+                 if (!db || !userId) return;
+                 if (isSaving) return;
+                 
+                 // 1. Update Firebase Status First
+                 // The actual status update happens inside handleSave, but we need the data saved first
+                 await handleSave(caseData, isEditMode);
 
                 setIsSaving(true);
                 
                 try {
-                    // 1. Call Apps Script to Generate HTML
-                    const timestampForReport = currentCase && currentCase.timestamp ? currentCase.timestamp : new Date().toLocaleDateString('th-TH');
-
+                    // 2. Prepare Data for Apps Script (must send the final ID)
                     const caseDataForScript = { 
                         ...caseData, 
-                        timestamp: timestampForReport 
+                        // Apps Script needs the ID to update the correct row if editing
+                        id: caseData.id || new Date().getTime().toString(), // Use current timestamp if new case
+                        // Add an indicator to show which case type this is
+                        caseType: 'case_report' 
                     }; 
                     
-                    const response = await fetch(APPS_SCRIPT_URL, {
+                    const response = await fetch(APPS_SCRIPT_RECORD_URL, {
                         method: 'POST',
                         mode: 'cors',
                         cache: 'no-cache',
@@ -691,26 +699,41 @@
                         body: JSON.stringify(caseDataForScript)
                     });
 
-                    if (!response.ok) throw new Error('Apps Script Server Error');
+                    if (!response.ok) throw new Error('Apps Script Server Error (HTTP ' + response.status + ')');
                     
                     const result = await response.json();
 
-                    if (result.success && result.html) {
-                        // 2. Update status in Firestore
-                        await handleSave(caseData, currentCase !== null);
+                    if (result.success) {
+                        // 3. Show the print modal (Since Apps Script now handles PDF upload)
+                        // We will show a success message and allow printing of the HTML report data
+                        alert(result.message);
+
+                        // Since we cannot get the PDF file path back easily, we will simulate the print modal
+                        // or provide a link to the Google Drive folder if available.
                         
-                        // 3. Show the print modal
-                        setPrintHtml(result.html);
+                        // Use case data to generate a simple HTML for the local print dialogue
+                        const reportHtml = `
+                        <html><head><style>@page { size: A4; margin: 1in; } body { font-family: 'Kanit', sans-serif; }</style></head>
+                        <body>
+                            <h2 style="text-align: center;">รายงานสรุปเคส (อัปโหลดขึ้น Drive แล้ว)</h2>
+                            <p><strong>ผู้ป่วย:</strong> ${caseData.patient_name}</p>
+                            <p><strong>สาขา:</strong> ${branchMap[caseData.branch]}</p>
+                            <p><strong>สถานะ:</strong> ปิดเคสแล้ว</p>
+                            <p><strong>วันที่:</strong> ${new Date().toLocaleDateString('th-TH')}</p>
+                            <p style="margin-top: 20px;">กรุณากด Ctrl+P เพื่อบันทึกเป็น PDF หรือพิมพ์รายงาน</p>
+                        </body></html>
+                        `;
+
+                        setPrintHtml(reportHtml);
                         setShowPrintModal(true);
                         
                     } else {
-                        throw new Error(result.message || 'Error generating HTML report.');
+                        throw new Error(result.message || 'Apps Script reported an error.');
                     }
 
                 } catch (e) {
-                    console.error("PDF Generation Error:", e);
-                    alert(`เกิดข้อผิดพลาดในการออกรายงาน: ${e.message}. ระบบได้บันทึกสถานะ "ปิดเคสแล้ว" ในฐานข้อมูลแล้ว`);
-                    await handleSave(caseData, currentCase !== null);
+                    console.error("Record/PDF Generation Error:", e);
+                    alert(`เกิดข้อผิดพลาดในการบันทึก/ออกรายงาน: ${e.message}. ข้อมูลหลักถูกบันทึกใน Firebase แล้ว (สถานะ: ปิดเคสแล้ว)`);
                     setView('dashboard');
                     setCurrentCase(null);
                 } finally {
