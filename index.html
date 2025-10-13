@@ -40,9 +40,20 @@
 
         const { useState, useEffect, useMemo } = React;
         
-        // --- Global Firebase Variable Setup ---
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        // --- 1. FIREBASE CONFIGURATION (MANDATORY TO REPLACE) ---
+        // !!! คุณต้องนำ Firebase Config Object ของคุณมาวางที่นี่ !!!
+        const USER_FIREBASE_CONFIG = {
+            // ⬇️ นำข้อมูลของคุณมาใส่ที่นี่ ⬇️
+            apiKey: "AIzaSyB1ixH1epK4fnaLLbO10wsH_LTDDhraoyg",
+            authDomain: "casereportcmo.firebaseapp.com",
+            projectId: "casereportcmo",
+            storageBucket: "casereportcmo.firebasestorage.app",
+            messagingSenderId: "588025239095",
+            appId: "1:588025239095:web:9d98aaf31e903546da91b2"
+            // ⬆️ นำข้อมูลของคุณมาใส่ที่นี่ ⬆️
+        };
+        // ใช้ชื่อ ID สำหรับ Firestore Path (กำหนดเอง)
+        const FIREBASE_PATH_APP_ID = 'trang-case-system'; 
 
         // =======================================================================================
         // !!! APPS SCRIPT DEPLOYMENT URL (สำหรับการสร้างรายงาน PDF/HTML) !!!
@@ -50,7 +61,7 @@
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyeZlzGLNmUtDkj5hgASnzNaQU0KUmLBFm-mVQULfxm1alRAP23_6MHbwxO0RZA2tTpYg/exec'; 
         // =======================================================================================
         
-        // --- Branch and Complaints Data ---
+        // --- Branch and Complaints Data (Unchanged) ---
         const branchMap = {
             '1': 'สาขา 1 นาเมืองเพชร', '2': 'สาขา 2 ที่วัง', '3': 'สาขา 3 คลองเต็ง',
             '4': 'สาขา 4 นาโยง', '5': 'สาขา 5 ท่ากลาง', '6': 'สาขา 6 รัษฎา',
@@ -124,39 +135,33 @@
             const [isAuthReady, setIsAuthReady] = useState(false);
 
             useEffect(() => {
-                if (!firebaseConfig) {
-                    console.error("Firebase config is missing.");
+                if (!USER_FIREBASE_CONFIG.apiKey || USER_FIREBASE_CONFIG.apiKey === "YOUR_API_KEY") {
+                    console.error("Firebase config is missing or incomplete. Please replace placeholders.");
+                    setIsAuthReady(true); // Stop loading, show error
                     return;
                 }
 
                 try {
-                    // Initialize Firebase (using compat libraries loaded in <script> tags)
-                    firebase.initializeApp(firebaseConfig);
+                    // Initialize Firebase with user's config
+                    firebase.initializeApp(USER_FIREBASE_CONFIG);
                     const firestore = getFirestoreCompat();
                     const authInstance = getAuthCompat();
                     setDb(firestore);
                     setAuth(authInstance);
 
+                    // Sign in Anonymously as the user is running on a public page
                     const unsubscribe = authInstance.onAuthStateChanged(async (user) => {
-                        if (user) {
-                            setUserId(user.uid);
-                        } else {
-                            try {
-                                const authPromise = typeof __initial_auth_token !== 'undefined' 
-                                    ? authInstance.signInWithCustomToken(__initial_auth_token)
-                                    : authInstance.signInAnonymously();
-                                await authPromise;
-                            } catch (e) {
-                                console.error("Firebase Auth Error:", e);
-                                await authInstance.signInAnonymously();
-                            }
+                        if (!user) {
+                            await authInstance.signInAnonymously();
                         }
+                        setUserId(authInstance.currentUser.uid);
                         setIsAuthReady(true);
                     });
 
                     return () => unsubscribe();
                 } catch (e) {
                     console.error("Firebase initialization failed:", e);
+                    setIsAuthReady(true);
                 }
             }, []);
 
@@ -168,10 +173,10 @@
             const [loading, setLoading] = useState(true);
 
             useEffect(() => {
-                if (!db || !isAuthReady) return;
+                if (!db || !isAuthReady || !db.collection) return;
 
-                // Collection Path: /artifacts/{appId}/public/data/cases
-                const caseCollectionRef = getCollectionCompat(db, 'artifacts', appId, 'public/data/cases');
+                // Use fixed path ID since we don't have global __app_id
+                const caseCollectionRef = getCollectionCompat(db, 'artifacts', FIREBASE_PATH_APP_ID, 'public/data/cases');
                 
                 const unsubscribe = caseCollectionRef.onSnapshot((snapshot) => {
                     const caseList = snapshot.docs.map(doc => {
@@ -603,6 +608,19 @@
             const [showPrintModal, setShowPrintModal] = useState(false);
             const [printHtml, setPrintHtml] = useState('');
             const [isSaving, setIsSaving] = useState(false);
+            
+            // Check if config is present before rendering anything
+             if (!isAuthReady && (!USER_FIREBASE_CONFIG.apiKey || USER_FIREBASE_CONFIG.apiKey === "YOUR_API_KEY")) {
+                 return (
+                     <div className="p-12 text-center bg-white m-12 rounded-lg shadow-xl">
+                        <h1 className="text-red-600 text-3xl font-bold mb-4">🛑 Firebase Configuration Error</h1>
+                        <p className="text-lg text-gray-700">
+                            เว็บไซต์หยุดทำงานเนื่องจาก **Firebase Configuration** ขาดหายหรือยังไม่ได้แทนที่ <br/>
+                            กรุณาแก้ไขไฟล์ <code className="bg-gray-200 p-1 rounded">index.html</code> (บรรทัดที่ 49) ด้วยข้อมูล Firebase Config ของคุณ
+                        </p>
+                    </div>
+                 );
+             }
 
 
             // Function to handle Firestore Save/Update
@@ -613,11 +631,11 @@
                 }
 
                 setIsSaving(true);
-                const caseCollectionRef = getCollectionCompat(db, 'artifacts', appId, 'public/data/cases');
+                const caseCollectionRef = getCollectionCompat(db, 'artifacts', FIREBASE_PATH_APP_ID, 'public/data/cases');
 
                 try {
                     if (isEdit) {
-                        const docRef = getDocCompat(db, 'artifacts', appId, 'public/data/cases', caseData.id);
+                        const docRef = getDocCompat(db, 'artifacts', FIREBASE_PATH_APP_ID, 'public/data/cases', caseData.id);
                         const { id, timestamp, ...dataToUpdate } = caseData; 
                         await docRef.update(dataToUpdate);
                     } else {
@@ -646,7 +664,7 @@
                     alert('ระบบยังไม่พร้อม: กรุณารอสักครู่');
                     return;
                 }
-                if (APPS_SCRIPT_URL === 'YOUR_DEPLOYED_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE') {
+                if (APPS_SCRIPT_URL.includes('YOUR_DEPLOYED_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE')) {
                     alert('⚠️ กรุณาตั้งค่า APPS_SCRIPT_URL ในโค้ดก่อนจึงจะสามารถออกรายงานได้ (บันทึกสถานะ "ปิดเคสแล้ว" ในฐานข้อมูลแทน)');
                     await handleSave(caseData, currentCase !== null);
                     setView('dashboard');
@@ -658,7 +676,6 @@
                 
                 try {
                     // 1. Call Apps Script to Generate HTML
-                    // Use Firestore timestamp or a new Date object if no Firestore timestamp exists
                     const timestampForReport = currentCase && currentCase.timestamp ? currentCase.timestamp : new Date().toLocaleDateString('th-TH');
 
                     const caseDataForScript = { 
@@ -706,7 +723,7 @@
                 if (!db || !userId) return;
 
                 try {
-                    const docRef = getDocCompat(db, 'artifacts', appId, 'public/data/cases', caseId);
+                    const docRef = getDocCompat(db, 'artifacts', FIREBASE_PATH_APP_ID, 'public/data/cases', caseId);
                     await docRef.delete();
                     alert('ลบเคสสำเร็จ');
                     setView('dashboard');
