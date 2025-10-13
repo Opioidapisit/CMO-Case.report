@@ -124,6 +124,8 @@ const fetchAllCases = async () => {
     const result = await sendDataToApi({}, 'getCaseList'); 
     
     if (result && result.status === 'success') {
+        // *** บรรทัดสำหรับ DEBUG: แสดงข้อมูลที่ได้รับจาก Google Sheet ***
+        console.log('Data received from Apps Script:', result.data); 
         renderCaseTable(result.data);
     } else {
         // หากมีข้อผิดพลาดในการดึงข้อมูล (เช่น CORS/URL)
