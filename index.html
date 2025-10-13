@@ -4,142 +4,642 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ระบบบันทึกการรักษาและส่งต่อผู้ป่วย คลินิคยา มอ ออ จังหวัดตรัง</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700&display=swap" rel="stylesheet">
-    
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+    <!-- Google Fonts: Kanit -->
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         /* กำหนด Kanit เป็น Font หลัก */
         body {
             font-family: 'Kanit', sans-serif;
-            background-color: #f7f9fb; /* สีพื้นหลังอ่อนๆ */
+            background-color: #f7f9fb;
         }
-        /* ปรับขนาดและน้ำหนักฟอนต์สำหรับ Heading ให้เด่นขึ้น */
-        .header-title {
-            font-weight: 600; /* Semi-bold */
+        /* Custom class for Kanit font, used within the React app */
+        .font-kanit {
+            font-family: 'Kanit', sans-serif;
         }
     </style>
 </head>
-<body class="min-h-screen">
+<body>
+    <div id="root"></div>
+
+    <!-- React and Babel Libraries -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
-    <header class="bg-white shadow-md sticky top-0 z-10">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col justify-center items-center text-center">
-            <h1 class="header-title text-3xl text-gray-900 tracking-tight">
-                ระบบบันทึกการรักษาและส่งต่อผู้ป่วย คลินิคยา มอ ออ จังหวัดตรัง
-            </h1>
-        </div>
-    </header>
+    <!-- Firebase Libraries -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
 
-    <main class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    <script type="text/babel">
+        // ======================================================================
+        // START of App.jsx Content
+        // ======================================================================
+
+        // NOTE: The entire content of App.jsx is embedded here.
         
-        <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4 mb-8">
-            <button id="add-case-btn" 
-                    class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-lg shadow-lg transition duration-150 ease-in-out">
-                <span class="text-xl">+</span> เพิ่มเคสใหม่
-            </button>
-            <button id="refer-patient-btn" 
-                    class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-6 rounded-lg transition duration-150 ease-in-out">
-                ส่งต่อผู้ป่วย
-            </button>
-            <button id="adr-report-btn" 
-                    class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-6 rounded-lg transition duration-150 ease-in-out">
-                รายงานอาการไม่พึงประสงค์
-            </button>
-        </div>
+        const { useState, useEffect, useMemo, useCallback } = React;
+        
+        // --- Global Firebase Variable Setup ---
+        // These are accessed directly by the code below
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        
+        // --- Branch and Complaints Data ---
+        const branchMap = {
+            '1': 'สาขา 1 นาเมืองเพชร', '2': 'สาขา 2 ที่วัง', '3': 'สาขา 3 คลองเต็ง',
+            '4': 'สาขา 4 นาโยง', '5': 'สาขา 5 ท่ากลาง', '6': 'สาขา 6 รัษฎา',
+            '7': 'สาขา 7 รักษ์จันทน์', '8': 'สาขา 8 หน้า รร.สภาราชินี', '9': 'สาขา 9 หน้า บิ๊กซ๊'
+        };
 
-        <div class="bg-white p-6 rounded-xl shadow-lg mb-8">
-            <div class="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4">
-                <input type="text" id="search-input" 
-                       placeholder="ค้นหา: ชื่อ, สกุล, HN, เบอร์โทรศัพท์..."
-                       class="flex-grow border border-gray-300 rounded-lg p-3 focus:ring-indigo-500 focus:border-indigo-500 text-lg">
-                <button id="search-btn" 
-                        class="bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-3 px-6 rounded-lg w-full sm:w-auto transition duration-150 ease-in-out">
-                    ค้นหา
-                </button>
-            </div>
-            
-            <div class="mt-4 flex space-x-4 text-sm font-medium">
-                <span class="text-gray-500">กรองสถานะ:</span>
-                <a href="#" class="text-indigo-600 hover:text-indigo-800 border-b-2 border-indigo-600">ทั้งหมด</a>
-                <a href="#" class="text-gray-500 hover:text-indigo-600">รอติดตาม (3)</a>
-                <a href="#" class="text-gray-500 hover:text-indigo-600">ปิดเคสแล้ว (15)</a>
-            </div>
-        </div>
+        const chiefComplaintsOptions = [
+            { value: '(01) Dizziness', label: 'Dizziness (เวียนศีรษะ)' },
+            { value: '(02) Headache', label: 'Headache (ปวดหัว)' },
+            { value: '(03) Pain in joint/muscle pain', label: 'ปวดข้อ/กล้ามเนื้อ' },
+            { value: '(04) Toothache', label: 'Toothache (ปวดฟัน)' },
+            { value: '(05) Abdominal pain (Menstrual)', label: 'ปวดประจำเดือน' },
+            { value: '(06) Stomachache', label: 'Stomachache (ปวดท้อง)' },
+            { value: '(07) Diarrhea', label: 'Diarrhea (ท้องเสีย)' },
+            { value: '(08) Constipation/Hemorrhoids', label: 'ท้องผูก/ริดสีดวงทวาร' },
+            { value: '(09) Dysuria', label: 'Dysuria (ปัสสาวะแสบขัด)' },
+            { value: '(10) Vaginal discharge', label: 'Vaginal discharge (ตกขาว)' },
+            { value: '(11) Wound', label: 'Wound (แผล)' },
+            { value: '(12) Skin rash', label: 'Skin rash (ผื่นผิวหนัง)' },
+            { value: '(13) Eye disorder', label: 'Eye disorder (อาการทางตา)' },
+            { value: '(14) Ear disorder', label: 'Ear disorder (อาการทางหู)' },
+            { value: '(15) Fever/cough/sore throat', label: 'ไข้ ไอ เจ็บคอ' },
+            { value: '(16) Covid-19', label: 'Covid-19 (ติดเชื้อโควิด)' },
+            { value: '(17) Rhinorrhea/ nasal congestion', label: 'น้ำมูก คัดจมูก' },
+            { value: '(18) Ulcer in mouth', label: 'Ulcer in mouth (แผลในปาก)' },
+            { value: '(19) Herpes simplex', label: 'Herpes simplex (ตุ่มน้ำใสที่ปาก)' },
+            { value: '(20) Burn', label: 'Burn (แผลน้ำร้อนลวก)' },
+            { value: '(21) Itchy skin/head', label: 'อาการคันผิวหนัง/ศีรษะ' },
+            { value: '(22) Helminthiasis', label: 'Helminthiasis (พยาธิ)' },
+            { value: '(23) Scabies', label: 'Scabies (หิด เหา)' },
+            { value: '(24) Cellulitis', label: 'Cellulitis (ฝี หนองที่ผิวหนัง)' },
+            { value: '(25) Beriberi', label: 'Beriberi (อาการชา/เหน็บชา)' },
+            { value: '(26) Insomnia', label: 'Insomnia (อาการนอนไม่หลับ)' },
+            { value: '(27) Motion sickness', label: 'Motion sickness (เมารถ เมาเรือ)' },
+            { value: '(28) Anorexia', label: 'Anorexia (เบื่ออาหาร)' },
+            { value: '(29) Nausea and vomitting', label: 'คลื่นไส้ อาเจียน' },
+            { value: '(30) Drug/food allergy/insect bite', label: 'อาการแพ้ยา/อาหาร/แมลงกัดต่อย' },
+            { value: '(31) Tobacco dependence', label: 'เจ็บป่วยจากการสูบบุหรี่' },
+            { value: '(32) Gingivitis', label: 'เหงือกอักเสบ/มีกลิ่นปาก' },
+        ];
+        
+        // --- Utility Functions ---
+        const getFirestoreCompat = () => firebase.firestore();
+        const getAuthCompat = () => firebase.auth();
+        const getCollectionCompat = (db, ...path) => db.collection(path.join('/'));
+        const getDocCompat = (db, ...path) => db.doc(path.join('/'));
+        const serverTimestampCompat = firebase.firestore.FieldValue.serverTimestamp;
+        
+        // ======================================================================
+        // 2. FIREBASE HOOKS & CONTEXT
+        // ======================================================================
 
-        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                ชื่อ - สกุล
-                            </th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden sm:table-cell">
-                                เบอร์โทร
-                            </th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                อาการสำคัญ
-                            </th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden lg:table-cell">
-                                วันที่รายงาน
-                            </th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                สถานะ
-                            </th>
-                            <th class="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                การดำเนินการ
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody id="case-table-body" class="bg-white divide-y divide-gray-200">
-                        <tr class="hover:bg-indigo-50/50 cursor-pointer">
-                            <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">
-                                <a href="#" class="text-indigo-600 hover:text-indigo-800" data-case-id="1">นางสาว สุภาภรณ์ ดีใจ</a>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden sm:table-cell">081-XXX-XXXX</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">ปวดท้อง, คลื่นไส้</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden lg:table-cell">13/10/2568</td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-100 text-orange-800">
-                                    รอติดตาม
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <a href="#" class="text-indigo-600 hover:text-indigo-900">ดู/แก้ไข</a>
-                            </td>
-                        </tr>
-                         <tr class="hover:bg-indigo-50/50 cursor-pointer">
-                            <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">
-                                <a href="#" class="text-indigo-600 hover:text-indigo-800" data-case-id="2">นาย ชัยชนะ มั่นคง</a>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden sm:table-cell">089-XXX-XXXX</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">ปวดหัว, เวียนศีรษะ</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden lg:table-cell">12/10/2568</td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                    ปิดเคสแล้ว
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <a href="#" class="text-indigo-600 hover:text-indigo-900">ดู/แก้ไข</a>
-                            </td>
-                        </tr>
-                        </tbody>
-                </table>
-            </div>
+        const defaultFormData = {
+            branch: '1', reporter: '', patient_name: '', tel: '', age: '', weight: '', height: '',
+            chronic_disease: '', drug_allergy: '', chief_complaints: [], history: '', diagnosis: '',
+            treatment: '', follow_up_date: '', follow_up_result: '', status: 'รอติดตาม',
+        };
+
+        const useFirebase = () => {
+            const [db, setDb] = useState(null);
+            const [auth, setAuth] = useState(null);
+            const [userId, setUserId] = useState(null);
+            const [isAuthReady, setIsAuthReady] = useState(false);
+
+            useEffect(() => {
+                if (!firebaseConfig) {
+                    console.error("Firebase config is missing.");
+                    return;
+                }
+
+                try {
+                    firebase.initializeApp(firebaseConfig);
+                    const firestore = getFirestoreCompat();
+                    const authInstance = getAuthCompat();
+                    setDb(firestore);
+                    setAuth(authInstance);
+
+                    const unsubscribe = authInstance.onAuthStateChanged(async (user) => {
+                        if (user) {
+                            setUserId(user.uid);
+                        } else {
+                            try {
+                                if (typeof __initial_auth_token !== 'undefined') {
+                                    await authInstance.signInWithCustomToken(__initial_auth_token);
+                                } else {
+                                    await authInstance.signInAnonymously();
+                                }
+                            } catch (e) {
+                                console.error("Firebase Auth Error:", e);
+                                await authInstance.signInAnonymously();
+                            }
+                        }
+                        setIsAuthReady(true);
+                    });
+
+                    return () => unsubscribe();
+                } catch (e) {
+                    console.error("Firebase initialization failed:", e);
+                }
+            }, []);
+
+            return { db, auth, userId, isAuthReady };
+        };
+
+        const useCaseData = (db, isAuthReady) => {
+            const [cases, setCases] = useState([]);
+            const [loading, setLoading] = useState(true);
+
+            useEffect(() => {
+                if (!db || !isAuthReady) return;
+
+                const caseCollectionRef = getCollectionCompat(db, 'artifacts', appId, 'public/data/cases');
+                
+                // Fetch all data (as requested, filtering is done client-side for simplicity)
+                const unsubscribe = caseCollectionRef.onSnapshot((snapshot) => {
+                    const caseList = snapshot.docs.map(doc => {
+                        const data = doc.data();
+                        return {
+                            id: doc.id,
+                            ...data,
+                            // Format timestamp for display (using compat version for date conversion)
+                            timestamp: data.timestamp?.toDate ? data.timestamp.toDate().toLocaleDateString('th-TH') : 'N/A',
+                        };
+                    });
+                    setCases(caseList);
+                    setLoading(false);
+                }, (error) => {
+                    console.error("Firestore error:", error);
+                    setLoading(false);
+                });
+
+                return () => unsubscribe();
+            }, [db, isAuthReady]);
+
+            return { cases, loading };
+        };
+
+
+        // ======================================================================
+        // 3. COMPONENTS
+        // ======================================================================
+
+        // --- A. Case Report Form Component ---
+        const CaseForm = ({ initialCase = null, onSave, onCancel, onDelete }) => {
+            // No defaultBranchId needed as requested: 'ให้ทุกสาขาเห็นกันได้ เหมือนโค้ดแรก ถูกแล้ว'
+            const initialData = initialCase ? initialCase : defaultFormData;
+                
+            const [formData, setFormData] = useState(initialData);
+            const isEditMode = initialCase !== null;
+
+            useEffect(() => {
+                // When entering Edit Mode (has initialCase)
+                if (isEditMode) {
+                    if (typeof initialCase.chief_complaints === 'string') {
+                        initialCase.chief_complaints = initialCase.chief_complaints.split('; ').filter(Boolean);
+                    }
+                    setFormData(initialCase);
+                }
+            }, [initialCase, isEditMode]);
+
+            const handleChange = (e) => {
+                const { name, value, type, checked } = e.target;
+                
+                if (type === 'checkbox') {
+                    setFormData(prev => {
+                        const updatedComplaints = checked
+                            ? [...prev.chief_complaints, value]
+                            : prev.chief_complaints.filter(c => c !== value);
+                        return { ...prev, chief_complaints: updatedComplaints };
+                    });
+                } else {
+                    setFormData(prev => ({ ...prev, [name]: value }));
+                }
+            };
+
+            const handleSubmit = (e, newStatus = null, shouldDelete = false) => {
+                e.preventDefault();
+                
+                if (!formData.patient_name || !formData.branch || !formData.reporter || formData.chief_complaints.length === 0) {
+                    alert('กรุณากรอกข้อมูลผู้ป่วย, สาขา, ผู้รายงาน และอาการสำคัญ');
+                    return;
+                }
+                
+                if (shouldDelete) {
+                    onDelete(formData.id);
+                    return;
+                }
+
+                const finalData = {
+                    ...formData,
+                    chief_complaints: Array.isArray(formData.chief_complaints) ? formData.chief_complaints.join('; ') : formData.chief_complaints,
+                    status: newStatus || formData.status,
+                    follow_up_result: newStatus === 'รอติดตาม' ? '' : formData.follow_up_result
+                };
+                
+                onSave(finalData, isEditMode);
+            };
+
+            return (
+                <main className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+                    <div className="bg-white p-8 rounded-xl shadow-lg">
+                        <h1 className="text-2xl font-semibold text-gray-900 mb-6 border-b pb-2">
+                            {isEditMode ? `แก้ไขเคส: ${formData.patient_name}` : 'บันทึกเคสใหม่'}
+                        </h1>
+                        
+                        <form onSubmit={(e) => handleSubmit(e)}>
+                            {/* --- 1. ข้อมูลการรายงาน --- */}
+                            <h2 className="text-xl font-bold mb-4 text-indigo-700 border-b pb-2 mt-6">1. ข้อมูลการรายงาน</h2>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">สาขาที่รายงาน <span className="text-red-500">*</span></label>
+                                    <select name="branch" value={formData.branch} onChange={handleChange} required
+                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2.5 focus:border-indigo-500 focus:ring-indigo-500">
+                                        {Object.keys(branchMap).map(id => (
+                                            <option key={id} value={id}>{branchMap[id]}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">ผู้รายงาน <span className="text-red-500">*</span></label>
+                                    <input type="text" name="reporter" value={formData.reporter} onChange={handleChange} required
+                                           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2.5 focus:border-indigo-500 focus:ring-indigo-500"/>
+                                </div>
+                            </div>
+
+                            {/* --- 2. ข้อมูลผู้ป่วยและประวัติ --- */}
+                            <h2 className="text-xl font-bold mb-4 text-indigo-700 border-b pb-2">2. ข้อมูลผู้ป่วยและประวัติ</h2>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                                <div className="md:col-span-3">
+                                    <label className="block text-sm font-medium text-gray-700">ชื่อ-สกุล ผู้ป่วย <span className="text-red-500">*</span></label>
+                                    <input type="text" name="patient_name" value={formData.patient_name} onChange={handleChange} required
+                                           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2.5 focus:border-indigo-500 focus:ring-indigo-500"/>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">เบอร์โทรศัพท์</label>
+                                    <input type="tel" name="tel" value={formData.tel} onChange={handleChange}
+                                           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2.5 focus:border-indigo-500 focus:ring-indigo-500"/>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">อายุ</label>
+                                    <input type="number" name="age" value={formData.age} onChange={handleChange}
+                                           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2.5 focus:border-indigo-500 focus:ring-indigo-500"/>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">น้ำหนัก (กก.)</label>
+                                    <input type="number" name="weight" value={formData.weight} onChange={handleChange}
+                                           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2.5 focus:border-indigo-500 focus:ring-indigo-500"/>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">ส่วนสูง (ซม.)</label>
+                                    <input type="number" name="height" value={formData.height} onChange={handleChange}
+                                           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2.5 focus:border-indigo-500 focus:ring-indigo-500"/>
+                                </div>
+                                <div className="md:col-span-2">
+                                    <label className="block text-sm font-medium text-gray-700">โรคประจำตัว</label>
+                                    <input type="text" name="chronic_disease" value={formData.chronic_disease} onChange={handleChange}
+                                           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2.5 focus:border-indigo-500 focus:ring-indigo-500"/>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">ประวัติแพ้ยา</label>
+                                    <input type="text" name="drug_allergy" value={formData.drug_allergy} onChange={handleChange}
+                                           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2.5 focus:border-indigo-500 focus:ring-indigo-500"/>
+                                </div>
+                            </div>
+                            
+                            {/* --- 3. รายละเอียดเคสและการรักษา --- */}
+                            <h2 className="text-xl font-bold mb-4 text-indigo-700 border-b pb-2">3. รายละเอียดเคสและการรักษา</h2>
+                            <div className="grid grid-cols-1 gap-6 mb-6">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">อาการสำคัญ (เลือกได้มากกว่า 1) <span className="text-red-500">*</span></label>
+                                    <div id="chief-complaints-list" className="bg-gray-50 p-4 rounded-md border border-gray-300 h-64 overflow-y-auto">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-2 gap-x-4">
+                                            {chiefComplaintsOptions.map(option => (
+                                                <div key={option.value} className="flex items-center">
+                                                    <input 
+                                                        type="checkbox" 
+                                                        name="chief_complaints" 
+                                                        value={option.value} 
+                                                        checked={formData.chief_complaints.includes(option.value)}
+                                                        onChange={handleChange}
+                                                        className="rounded text-indigo-600 focus:ring-indigo-500 h-4 w-4 mr-2"
+                                                    />
+                                                    <span className="text-sm text-gray-800">{option.label}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">ผลการซักประวัติ</label>
+                                    <textarea name="history" rows="3" value={formData.history} onChange={handleChange}
+                                              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2.5 focus:border-indigo-500 focus:ring-indigo-500"></textarea>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">วินิจฉัย</label>
+                                    <input type="text" name="diagnosis" value={formData.diagnosis} onChange={handleChange}
+                                           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2.5 focus:border-indigo-500 focus:ring-indigo-500"/>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">วิธีการรักษา</label>
+                                    <textarea name="treatment" rows="3" value={formData.treatment} onChange={handleChange}
+                                              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2.5 focus:border-indigo-500 focus:ring-indigo-500"></textarea>
+                                </div>
+                            </div>
+
+                            {/* --- 4. การติดตามอาการ --- */}
+                            <h2 className="text-xl font-bold mb-4 text-indigo-700 border-b pb-2">4. การติดตามอาการ</h2>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">วันที่ติดตามอาการ</label>
+                                    <input type="date" name="follow_up_date" value={formData.follow_up_date} onChange={handleChange}
+                                           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2.5 focus:border-indigo-500 focus:ring-indigo-500"/>
+                                </div>
+                                <div className="md:col-span-2">
+                                    <label className="block text-sm font-medium text-gray-700">ผลการติดตาม (บันทึกเมื่อติดตามเรียบร้อย)</label>
+                                    <textarea name="follow_up_result" rows="2" value={formData.follow_up_result} onChange={handleChange}
+                                              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2.5 focus:border-indigo-500 focus:ring-indigo-500"></textarea>
+                                </div>
+                            </div>
+
+
+                            {/* --- Action Buttons --- */}
+                            <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4 pt-4 border-t mt-8">
+                                
+                                {/* 1. บันทึกเคส (รอติดตาม) - ใช้สำหรับพักเคส */}
+                                <button type="button" onClick={(e) => handleSubmit(e, 'รอติดตาม')}
+                                        className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition duration-150 ease-in-out">
+                                    <span className="text-lg">💾</span> บันทึก/พักเคส (สถานะ: รอติดตาม)
+                                </button>
+
+                                {/* 2. ปิดเคส (ปิดเคสแล้ว) - ใช้สำหรับปิดและส่งออก PDF (Simulated) */}
+                                <button type="button" onClick={(e) => handleSubmit(e, 'ปิดเคสแล้ว')}
+                                        className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition duration-150 ease-in-out">
+                                    <span className="text-lg">✅</span> ปิดเคส (เปลี่ยนสถานะเป็น ปิดเคสแล้ว)
+                                </button>
+                                
+                                {/* 3. ยกเลิก/ลบเคส */}
+                                {isEditMode && (
+                                     <button type="button" onClick={(e) => {
+                                         if(confirm('ยืนยันการลบเคสนี้หรือไม่? ข้อมูลจะหายไปถาวร')) {
+                                             handleSubmit(e, null, true);
+                                         }
+                                     }}
+                                        className="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition duration-150 ease-in-out">
+                                        <span className="text-lg">🗑️</span> ยกเลิก/ลบเคส
+                                     </button>
+                                )}
+                                 {!isEditMode && (
+                                     <button type="button" onClick={onCancel}
+                                        className="flex-1 bg-gray-400 hover:bg-gray-500 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition duration-150 ease-in-out">
+                                        <span className="text-lg">❌</span> ยกเลิก (กลับหน้าหลัก)
+                                     </button>
+                                 )}
+                            </div>
+                        </form>
+                    </div>
+                </main>
+            );
+        };
+
+
+        // --- B. Dashboard Component ---
+        const Dashboard = ({ cases, loading, onAddCase, onEditCase, onReport }) => {
             
-            <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-                <p class="text-sm text-gray-700">แสดงผล 1 ถึง 10 จาก 18 เคส</p>
+            const [searchTerm, setSearchTerm] = useState('');
+
+            const filteredAndSortedCases = useMemo(() => {
+                // 1. Search Filtering
+                const lowerCaseSearch = searchTerm.toLowerCase();
+                const filtered = cases.filter(c => 
+                    c.patient_name.toLowerCase().includes(lowerCaseSearch) ||
+                    c.tel.includes(searchTerm)
+                );
+
+                // 2. Sorting
+                return [...filtered].sort((a, b) => {
+                    if (a.status === 'รอติดตาม' && b.status !== 'รอติดตาม') return -1;
+                    if (a.status !== 'รอติดตาม' && b.status === 'รอติดตาม') return 1;
+                    // Fallback to sort by ID/date if statuses are the same
+                    return (b.id || '').localeCompare(a.id || ''); 
+                });
+            }, [cases, searchTerm]);
+
+            const pendingCount = filteredAndSortedCases.filter(c => c.status === 'รอติดตาม').length;
+
+            if (loading) {
+                return <div className="text-center p-12 text-gray-500 font-semibold">กำลังโหลดข้อมูล...</div>;
+            }
+
+            return (
+                <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+                    <h2 className="text-2xl font-bold mb-4 text-gray-800">
+                        รายการเคสทั้งหมด
+                    </h2>
+
+                    {/* Header and Action Buttons */}
+                    <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4 mb-8">
+                        <button onClick={onAddCase}
+                                className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-lg shadow-lg transition duration-150 ease-in-out">
+                            <span className="text-xl">+</span> เพิ่มเคสใหม่
+                        </button>
+                        <button onClick={() => onReport('refer')}
+                                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-6 rounded-lg transition duration-150 ease-in-out">
+                            ส่งต่อผู้ป่วย
+                        </button>
+                        <button onClick={() => onReport('adr')}
+                                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-6 rounded-lg transition duration-150 ease-in-out">
+                            รายงานอาการไม่พึงประสงค์
+                        </button>
+                    </div>
+
+                    {/* Search and Filter Bar */}
+                    <div className="bg-white p-6 rounded-xl shadow-lg mb-8">
+                        <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4">
+                            <input type="text" placeholder="ค้นหา: ชื่อ, สกุล, เบอร์โทรศัพท์..."
+                                   value={searchTerm}
+                                   onChange={(e) => setSearchTerm(e.target.value)}
+                                   className="flex-grow border border-gray-300 rounded-lg p-3 focus:ring-indigo-500 focus:border-indigo-500 text-lg"/>
+                            <button className="bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-3 px-6 rounded-lg w-full sm:w-auto transition duration-150 ease-in-out">
+                                ค้นหา
+                            </button>
+                        </div>
+                        
+                        {/* Status Indicator */}
+                        <div className="mt-4 flex space-x-4 text-sm font-medium">
+                            <span className="text-gray-500">สถานะเคส:</span>
+                            <span className="text-indigo-600">ทั้งหมด ({filteredAndSortedCases.length})</span>
+                            <span className="text-orange-600">รอติดตาม ({pendingCount})</span>
+                        </div>
+                    </div>
+
+                    {/* Case List Table */}
+                    <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full divide-y divide-gray-200">
+                                <thead className="bg-gray-50">
+                                    <tr>
+                                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">ชื่อ - สกุล</th>
+                                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden sm:table-cell">สาขา</th>
+                                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">อาการสำคัญ</th>
+                                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden lg:table-cell">วันที่รายงาน</th>
+                                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">สถานะ</th>
+                                        <th className="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">ดู/แก้ไข</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                    {filteredAndSortedCases.length > 0 ? (
+                                        filteredAndSortedCases.map(c => {
+                                            const statusClass = c.status === 'รอติดตาม' 
+                                                ? 'bg-orange-100 text-orange-800' 
+                                                : 'bg-green-100 text-green-800';
+
+                                            return (
+                                                <tr key={c.id} className="hover:bg-indigo-50/50 cursor-pointer">
+                                                    <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">
+                                                        {c.patient_name}
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden sm:table-cell">{branchMap[c.branch] || '-'}</td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{c.chief_complaints?.split(';')[0] || 'N/A'}</td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden lg:table-cell">{c.timestamp}</td>
+                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                        <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}`}>
+                                                            {c.status}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                        <button onClick={() => onEditCase(c)} className="text-indigo-600 hover:text-indigo-900">ดู/แก้ไข</button>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })
+                                    ) : (
+                                        <tr>
+                                            <td colSpan="6" className="text-center p-8 text-gray-500">
+                                                {!searchTerm ? 'ยังไม่มีข้อมูลเคสในระบบ' : 'ไม่พบเคสที่ตรงตามเงื่อนไขการค้นหา'}
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </main>
+            );
+        };
+
+
+        // --- C. Main Application Component (App) ---
+        function App() {
+            const { db, userId, isAuthReady } = useFirebase();
+            const { cases, loading } = useCaseData(db, isAuthReady);
+            
+            const [view, setView] = useState('dashboard');
+            const [currentCase, setCurrentCase] = useState(null); 
+
+            const handleSave = async (caseData, isEdit) => {
+                if (!db || !userId) {
+                    alert('ระบบยังไม่พร้อม: กรุณารอสักครู่');
+                    return;
+                }
+
+                const caseCollectionRef = getCollectionCompat(db, 'artifacts', appId, 'public/data/cases');
+
+                try {
+                    if (isEdit) {
+                        const docRef = getDocCompat(db, 'artifacts', appId, 'public/data/cases', caseData.id);
+                        const { id, timestamp, ...dataToUpdate } = caseData; 
+                        await docRef.update(dataToUpdate);
+                        alert(`อัปเดตเคส ${caseData.patient_name} เป็นสถานะ "${caseData.status}" สำเร็จ`);
+                    } else {
+                        await caseCollectionRef.add({
+                            ...caseData,
+                            timestamp: serverTimestampCompat(),
+                            userId: userId, 
+                        });
+                        alert(`บันทึกเคสใหม่ ${caseData.patient_name} สำเร็จ`);
+                    }
+                    setView('dashboard');
+                    setCurrentCase(null);
+                } catch (e) {
+                    console.error("Error saving case:", e);
+                    alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล: โปรดตรวจสอบ Console');
+                }
+            };
+
+            const handleDelete = async (caseId) => {
+                if (!db || !userId) return;
+
+                try {
+                    const docRef = getDocCompat(db, 'artifacts', appId, 'public/data/cases', caseId);
+                    await docRef.delete();
+                    alert('ยกเลิก/ลบเคสสำเร็จ');
+                    setView('dashboard');
+                    setCurrentCase(null);
+                } catch (e) {
+                    console.error("Error deleting case:", e);
+                    alert('เกิดข้อผิดพลาดในการลบเคส');
+                }
+            };
+            
+            if (!isAuthReady || !db) {
+                return <div className="text-center p-12 text-indigo-700 font-bold text-xl">กำลังเตรียมระบบ Firebase...</div>;
+            }
+
+            let content;
+            if (view === 'new_case' || view === 'edit_case') {
+                content = (
+                    <CaseForm 
+                        initialCase={currentCase} 
+                        onSave={handleSave} 
+                        onCancel={() => { setView('dashboard'); setCurrentCase(null); }} 
+                        onDelete={handleDelete}
+                    />
+                );
+            } else { // 'dashboard' view
+                content = (
+                    <Dashboard 
+                        cases={cases} 
+                        loading={loading} 
+                        onAddCase={() => setView('new_case')} 
+                        onEditCase={(c) => { setCurrentCase(c); setView('edit_case'); }}
+                        onReport={(type) => alert(`ฟังก์ชัน ${type === 'refer' ? 'ส่งต่อผู้ป่วย' : 'รายงาน ADR'} จะถูกเพิ่มในภายหลัง`)}
+                    />
+                );
+            }
+
+            return (
+                <div className="min-h-screen bg-gray-100 font-kanit">
+                    <header className="bg-white shadow-md sticky top-0 z-10">
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col justify-center items-center text-center">
+                            <h1 className="text-3xl font-semibold text-gray-900 tracking-tight">
+                                ระบบบันทึกการรักษาและส่งต่อผู้ป่วย คลินิคยา มอ ออ จังหวัดตรัง
+                            </h1>
+                            <div className="text-xs text-gray-500 mt-1">User ID: {userId}</div>
+                        </div>
+                    </header>
+                    {content}
+                    <footer className="mt-12 text-center text-gray-500 text-sm py-4 border-t">
+                        Case Management System (Powered by React &amp; Firebase)
+                    </footer>
                 </div>
-        </div>
-        
-    </main>
+            );
+        }
 
-    <footer class="mt-12 text-center text-gray-500 text-sm py-4 border-t">
-        &copy; 2025 Clinic Case System. Powered by GitHub Pages & Google Apps Script.
-    </footer>
+        // --- ReactDOM Render ---
+        const domContainer = document.getElementById('root');
+        const root = ReactDOM.createRoot(domContainer);
+        root.render(<App />);
 
-    <script src="script.js"></script>
+        // ======================================================================
+        // END of App.jsx Content
+        // ======================================================================
+    </script>
 </body>
 </html>
