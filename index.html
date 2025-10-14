@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ระบบบันทึกการรักษาและส่งต่อผู้ป่วย คลินิคยา มอ ออ จังหวัดตรัง</title>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Kanit -->
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         /* กำหนด Kanit เป็น Font หลัก */
@@ -36,12 +34,10 @@
 <body>
     <div id="root"></div>
 
-    <!-- React and Babel Libraries -->
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script> 
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
-    <!-- Firebase Libraries (Compat versions for single-file HTML) -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
@@ -608,13 +604,20 @@
         const Dashboard = ({ cases, loading, onAddCase, onEditCase, onReport }) => {
             
             const [searchTerm, setSearchTerm] = useState('');
+            const [branchFilter, setBranchFilter] = useState(''); // New State for Branch Filter
 
             const filteredAndSortedCases = useMemo(() => {
                 const lowerCaseSearch = searchTerm.toLowerCase();
-                const filtered = cases.filter(c => 
+                
+                let filtered = cases.filter(c => 
                     c.patient_name.toLowerCase().includes(lowerCaseSearch) ||
                     (c.tel && c.tel.includes(searchTerm))
                 );
+
+                // Apply Branch Filter (If branchFilter is set, filter by branch ID)
+                if (branchFilter) {
+                    filtered = filtered.filter(c => c.branch === branchFilter);
+                }
 
                 return [...filtered].sort((a, b) => {
                     // Always show 'รอติดตาม' first
@@ -622,7 +625,7 @@
                     if (a.status !== 'รอติดตาม' && b.status === 'รอติดตาม') return 1;
                     return (b.timestamp || '').localeCompare(a.timestamp || ''); 
                 });
-            }, [cases, searchTerm]);
+            }, [cases, searchTerm, branchFilter]); // Dependency on branchFilter
 
             const pendingCount = filteredAndSortedCases.filter(c => c.status === 'รอติดตาม').length;
 
@@ -662,13 +665,24 @@
 
                     {/* Search and Filter Bar */}
                     <div className="bg-white p-6 rounded-xl shadow-lg mb-8">
-                        <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4">
+                        <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4">
+                            {/* 1. Search Text Input */}
                             <input type="text" placeholder="ค้นหา: ชื่อ, สกุล, เบอร์โทรศัพท์..."
                                    value={searchTerm}
                                    onChange={(e) => setSearchTerm(e.target.value)}
                                    className="flex-grow border border-gray-300 rounded-lg p-3 focus:ring-indigo-500 focus:border-indigo-500 text-lg"/>
-                            <button className="bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-3 px-6 rounded-lg w-full sm:w-auto transition duration-150 ease-in-out">
-                                ค้นหา
+
+                            {/* 2. Branch Filter Dropdown (NEW) */}
+                            <select name="branchFilter" value={branchFilter} onChange={(e) => setBranchFilter(e.target.value)}
+                                    className="block w-full md:w-auto rounded-md border-gray-300 shadow-sm p-3 focus:border-indigo-500 focus:ring-indigo-500 text-lg">
+                                <option value="">--- กรองตามสาขา ---</option>
+                                {Object.keys(branchMap).map(id => (
+                                    <option key={id} value={id}>{branchMap[id]}</option>
+                                ))}
+                            </select>
+
+                            <button className="bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-3 px-6 rounded-lg w-full md:w-auto transition duration-150 ease-in-out">
+                                แสดงผล
                             </button>
                         </div>
                         
@@ -688,7 +702,7 @@
                                 <thead className="bg-gray-50">
                                     <tr>
                                         <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">ชื่อ - สกุล</th>
-                                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden sm:table-cell">สาขา</th>
+                                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider mobile-show">สาขา</th> {/* mobile-show class applied */}
                                         <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">อาการสำคัญ</th>
                                         <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden lg:table-cell">วันที่รายงาน</th>
                                         <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">สถานะ</th>
@@ -707,7 +721,7 @@
                                                     <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">
                                                         {c.patient_name}
                                                     </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden sm:table-cell">{branchMap[c.branch] || '-'}</td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 mobile-show">{branchMap[c.branch] || '-'}</td> {/* mobile-show class applied */}
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{c.chief_complaints?.split(';')[0] || 'N/A'}</td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden lg:table-cell">{c.timestamp}</td>
                                                     <td className="px-6 py-4 whitespace-nowrap">
@@ -724,7 +738,7 @@
                                     ) : (
                                         <tr>
                                             <td colSpan="6" className="text-center p-8 text-gray-500">
-                                                {!searchTerm ? 'ยังไม่มีข้อมูลเคสในระบบ' : 'ไม่พบเคสที่ตรงตามเงื่อนไขการค้นหา'}
+                                                {!searchTerm && !branchFilter ? 'ยังไม่มีข้อมูลเคสในระบบ' : 'ไม่พบเคสที่ตรงตามเงื่อนไขการค้นหา'}
                                             </td>
                                         </tr>
                                     )}
@@ -790,7 +804,6 @@
                     
                     if (shouldPrint) {
                         // 2. Trigger Apps Script Record/PDF (for Google Sheet update/Drive upload)
-                        // This is non-blocking to avoid CORS issues
                         triggerAppsScriptRecord({ ...caseData, id: docId, status: 'ปิดเคสแล้ว' }, isEdit);
                         
                         // 3. Show Print View immediately
@@ -838,7 +851,6 @@
                     const result = await response.json();
 
                     if (!result.success) {
-                        // Throw if Apps Script processed but returned a business logic error
                         throw new Error(result.message || 'Apps Script reported an error.');
                     }
 
