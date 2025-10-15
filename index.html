@@ -453,11 +453,11 @@
         const ReferralForm = ({ initialData, onCancel, onSendReport }) => {
             // Use initialData passed from parent (which holds incomplete referral data from print preview)
             const [formData, setFormData] = useState(initialData || {
-                pharmacy_name: 'ร้านยาคลินิคยา มอ ออ', 
+                pharmacy_name: 'ร้านยาคลินิคยา มอ ออ สาขา', 
                 pharmacy_address: '', 
                 pharmacy_tel: '', 
                 pharmacist_name: '',
-                license_no: '',
+                license_no: 'ภ.',
                 
                 patient_name: '',
                 cid: '',
@@ -1529,3 +1529,4 @@
     </script>
 </body>
 </html>
+
