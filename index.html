@@ -1,540 +1,470 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบบันทึกการรักษาและส่งต่อผู้ป่วย คลินิคยา มอ ออ จังหวัดตรัง</title>
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบบันทึกการรักษาและส่งต่อผู้ป่วย คลินิคยา มอ ออ จังหวัดตรัง</title>
+    
+    <!-- Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <style>
-        /* --- CORE STYLES --- */
-        :root {
-            --primary: #0056b3;       /* น้ำเงินเข้มขึ้น เพื่อความชัดเจน */
-            --primary-light: #eff6ff;
-            --secondary: #0ea5e9;     /* ฟ้าสดใส */
-            --text-main: #334155;
-            --text-light: #64748b;
-            --bg-body: #f1f5f9;
-            --card-radius: 16px;
-        }
+    <style>
+        /* --- CORE STYLES --- */
+        :root {
+            --primary: #0056b3;       /* น้ำเงินเข้มขึ้น เพื่อความชัดเจน */
+            --primary-light: #eff6ff;
+            --secondary: #0ea5e9;     /* ฟ้าสดใส */
+            --text-main: #334155;
+            --text-light: #64748b;
+            --bg-body: #f1f5f9;
+            --card-radius: 16px;
+        }
 
-        body {
-            font-family: 'Kanit', sans-serif;
-            background-color: var(--bg-body);
-            color: var(--text-main);
-            margin: 0;
-            padding-bottom: 60px;
-        }
+        body {
+            font-family: 'Kanit', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            padding-bottom: 60px;
+        }
 
-        /* --- HEADER --- */
-        .header-section {
-            background: linear-gradient(135deg, #0f172a 0%, #1e40af 100%); /* สีน้ำเงินเข้ม-ดำ ดูทางการ */
-            padding: 1.5rem 1rem 3rem 1rem;
-            border-bottom-left-radius: 24px;
-            border-bottom-right-radius: 24px;
-            color: white;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            position: relative;
-            z-index: 10;
-        }
+        /* --- HEADER --- */
+        .header-section {
+            background: linear-gradient(135deg, #0f172a 0%, #1e40af 100%); /* สีน้ำเงินเข้ม-ดำ ดูทางการ */
+            padding: 1.5rem 1rem 3rem 1rem;
+            border-bottom-left-radius: 24px;
+            border-bottom-right-radius: 24px;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 10;
+        }
 
-        .header-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
 
-        .shop-logo {
-            width: 60px;
-            height: 60px;
-            object-fit: contain;
-            background: white;
-            border-radius: 50%;
-            padding: 4px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        }
+        .shop-logo {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            background: white;
+            border-radius: 50%;
+            padding: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
 
-        /* --- MENU CARDS (Flashcards) --- */
-        .dashboard-container {
-            max-width: 1200px;
-            margin: -25px auto 0; /* ดึงขึ้นไปทับ Header เล็กน้อย */
-            padding: 0 1rem;
-            position: relative;
-            z-index: 20;
-        }
+        /* --- MENU CARDS (Flashcards) --- */
+        .dashboard-container {
+            max-width: 1200px;
+            margin: -25px auto 0; /* ดึงขึ้นไปทับ Header เล็กน้อย */
+            padding: 0 1rem;
+            position: relative;
+            z-index: 20;
+        }
 
-        .menu-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 12px;
-            margin-bottom: 2rem;
-        }
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin-bottom: 2rem;
+        }
 
-        .menu-card {
-            background: white;
-            border-radius: var(--card-radius);
-            padding: 1.25rem 1rem;
-            text-align: center;
-            text-decoration: none;
-            color: var(--text-main);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-            border: 1px solid #e2e8f0;
-            transition: all 0.2s ease-in-out;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            cursor: pointer;
-        }
+        .menu-card {
+            background: white;
+            border-radius: var(--card-radius);
+            padding: 1.25rem 1rem;
+            text-align: center;
+            text-decoration: none;
+            color: var(--text-main);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            cursor: pointer;
+        }
 
-        .menu-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            border-color: var(--secondary);
-        }
+        .menu-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border-color: var(--secondary);
+        }
 
-        .icon-box {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            margin-bottom: 10px;
-            color: white; /* ไอคอนสีขาว บนพื้นหลังสี */
-        }
+        .icon-box {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: white; /* ไอคอนสีขาว บนพื้นหลังสี */
+        }
 
-        .menu-title {
-            font-size: 0.95rem;
-            font-weight: 500;
-            line-height: 1.3;
-        }
+        .menu-title {
+            font-size: 0.95rem;
+            font-weight: 500;
+            line-height: 1.3;
+        }
 
-        /* --- BUTTONS --- */
-        .btn-action {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 10px 20px;
-            border-radius: 10px;
-            font-weight: 500;
-            transition: all 0.2s;
-            border: none;
-            cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .btn-action:hover { transform: translateY(-1px); box-shadow: 0 4px 6px rgba(0,0,0,0.15); }
-        .btn-action:disabled { opacity: 0.6; cursor: not-allowed; }
+        /* --- BUTTONS --- */
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 500;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .btn-action:hover { transform: translateY(-1px); box-shadow: 0 4px 6px rgba(0,0,0,0.15); }
+        .btn-action:disabled { opacity: 0.6; cursor: not-allowed; }
 
-        .btn-blue { background-color: #2563eb; color: white; }
-        .btn-blue:hover { background-color: #1d4ed8; }
+        .btn-blue { background-color: #2563eb; color: white; }
+        .btn-blue:hover { background-color: #1d4ed8; }
 
-        .btn-green { background-color: #16a34a; color: white; }
-        .btn-green:hover { background-color: #15803d; }
+        .btn-green { background-color: #16a34a; color: white; }
+        .btn-green:hover { background-color: #15803d; }
 
-        .btn-red { background-color: #dc2626; color: white; }
-        .btn-red:hover { background-color: #b91c1c; }
+        .btn-red { background-color: #dc2626; color: white; }
+        .btn-red:hover { background-color: #b91c1c; }
 
-        .btn-gray { background-color: #64748b; color: white; }
-        .btn-gray:hover { background-color: #475569; }
+        .btn-gray { background-color: #64748b; color: white; }
+        .btn-gray:hover { background-color: #475569; }
 
-        /* --- FORM --- */
-        .form-section {
-            background: white;
-            border-radius: var(--card-radius);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            padding: 2rem;
-            margin-bottom: 2rem;
-            border: 1px solid #f1f5f9;
-        }
+        /* --- FORM --- */
+        .form-section {
+            background: white;
+            border-radius: var(--card-radius);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid #f1f5f9;
+        }
 
-        .input-field, .select-field, .textarea-field {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            border-radius: 8px;
-            border: 1px solid #cbd5e1;
-            background-color: #f8fafc;
-            font-family: 'Kanit', sans-serif;
-            transition: border-color 0.2s;
-        }
-        .input-field:focus, .select-field:focus, .textarea-field:focus {
-            outline: none;
-            border-color: var(--primary);
-            background-color: white;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-        }
+        .input-field, .select-field, .textarea-field {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            background-color: #f8fafc;
+            font-family: 'Kanit', sans-serif;
+            transition: border-color 0.2s;
+        }
+        .input-field:focus, .select-field:focus, .textarea-field:focus {
+            outline: none;
+            border-color: var(--primary);
+            background-color: white;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
 
-        /* --- TABLE --- */
-        .modern-table thead th {
-            background-color: #f8fafc;
-            color: #64748b;
-            font-weight: 600;
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            padding: 1rem;
-            text-align: left;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        .modern-table tbody tr {
-            border-bottom: 1px solid #f1f5f9;
-        }
-        .modern-table tbody tr:last-child { border-bottom: none; }
-        .modern-table tbody tr:hover { background-color: #f8fafc; }
-        .modern-table td { padding: 1rem; vertical-align: middle; }
+        /* --- TABLE --- */
+        .modern-table thead th {
+            background-color: #f8fafc;
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .modern-table tbody tr {
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .modern-table tbody tr:last-child { border-bottom: none; }
+        .modern-table tbody tr:hover { background-color: #f8fafc; }
+        .modern-table td { padding: 1rem; vertical-align: middle; }
 
-        /* --- PRINT --- */
-        @media print {
-            .header-section, .no-print, footer, .dashboard-container { display: none !important; }
-            body { background-color: white !important; padding: 0; }
-            #view-area { display: none !important; }
-            #print-area, #print-area * { visibility: visible; }
-            #print-area { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0.5cm; }
-            .report-table td, .spsr-table td { border-color: #000 !important; page-break-inside: avoid; }
-            .report-table .header-row { background-color: #f0f0f0 !important; -webkit-print-color-adjust: exact; }
-        }
-    </style>
+        /* --- PRINT --- */
+        @media print {
+            .header-section, .no-print, footer, .dashboard-container { display: none !important; }
+            body { background-color: white !important; padding: 0; }
+            #view-area { display: none !important; }
+            #print-area, #print-area * { visibility: visible; }
+            #print-area { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0.5cm; }
+            .report-table td, .spsr-table td { border-color: #000 !important; page-break-inside: avoid; }
+            .report-table .header-row { background-color: #f0f0f0 !important; -webkit-print-color-adjust: exact; }
+        }
+    </style>
 </head>
 <body>
-    <div id="root"></div>
+    <div id="root"></div>
 
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script> 
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script> 
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
 
-    <script type="text/babel">
-        const { useState, useEffect, useMemo } = React;
-        
-        // --- FIREBASE CONFIG & LOGIC ---
-        const USER_FIREBASE_CONFIG = {
-            apiKey: "AIzaSyB1ixH1epK4fnaLLbO10wsH_LTDDhraoyg",
-            authDomain: "casereportcmo.firebaseapp.com",
-            projectId: "casereportcmo",
-            storageBucket: "casereportcmo.firebasestorage.app",
-            messagingSenderId: "588025239095",
-            appId: "1:588025239095:web:9d98aaf31e903546da91b2"
-        };
-        const FIREBASE_PATH_APP_ID = 'trang-case-system'; 
-        const APPS_SCRIPT_RECORD_URL = 'https://script.google.com/macros/s/AKfycbxvb717wxqHcUZVOi8xMSs-ICDa7DydwtDsfwHLMoF-F1V_eeCyI89ZD119uzkP3rifeg/exec'; 
-        const DRIVE_UPLOAD_CASE_URL = 'https://drive.google.com/drive/folders/16mKp3MNJL-9JksYeV8DCZVd6kcM8yCkJ?usp=sharing'; 
-        const DRIVE_REFERRAL_UPLOAD_URL = 'https://drive.google.com/drive/folders/11FPdw0jVNlgwPZKYdSVVJM0EyE2gvCyG?usp=sharing'; 
-        const LOGO_BASE_URL = './head refer form.jpg'; 
-        const SHOP_LOGO_URL = 'ตรา.png';
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
+        
+        // --- FIREBASE CONFIG & LOGIC (KEEP ORIGINAL) ---
+        const USER_FIREBASE_CONFIG = {
+            apiKey: "AIzaSyB1ixH1epK4fnaLLbO10wsH_LTDDhraoyg",
+            authDomain: "casereportcmo.firebaseapp.com",
+            projectId: "casereportcmo",
+            storageBucket: "casereportcmo.firebasestorage.app",
+            messagingSenderId: "588025239095",
+            appId: "1:588025239095:web:9d98aaf31e903546da91b2"
+        };
+        const FIREBASE_PATH_APP_ID = 'trang-case-system'; 
+        const APPS_SCRIPT_RECORD_URL = 'https://script.google.com/macros/s/AKfycbxvb717wxqHcUZVOi8xMSs-ICDa7DydwtDsfwHLMoF-F1V_eeCyI89ZD119uzkP3rifeg/exec'; 
+        const DRIVE_UPLOAD_CASE_URL = 'https://drive.google.com/drive/folders/16mKp3MNJL-9JksYeV8DCZVd6kcM8yCkJ?usp=sharing'; 
+        const DRIVE_REFERRAL_UPLOAD_URL = 'https://drive.google.com/drive/folders/11FPdw0jVNlgwPZKYdSVVJM0EyE2gvCyG?usp=sharing'; 
+        const LOGO_BASE_URL = './head refer form.jpg'; 
+        const SHOP_LOGO_URL = 'ตรา.png'; // New Shop Logo
 
-        const branchMap = { '1': 'สาขา 1 นาเมืองเพชร', '2': 'สาขา 2 ที่วัง', '3': 'สาขา 3 คลองเต็ง', '4': 'สาขา 4 นาโยง', '5': 'สาขา 5 ท่ากลาง', '6': 'สาขา 6 รัษฎา', '7': 'สาขา 7 รักษ์จันทน์', '8': 'สาขา 8 หน้า รร.สภาราชินี', '9': 'สาขา 9 หน้า บิ๊กซ๊' };
-        const fullBranchNameMap = { '1': 'คลินิคยา มอ ออ', '2': 'คลินิคยา มอ ออ 2', '3': 'คลินิคยา มอ ออ 3', '4': 'คลินิคยา มอ ออ 4', '5': 'คลินิคยา มอ ออ ท่ากลาง', '6': 'คลินิคยา มอ ออ สาขารัษฎา', '7': 'คลินิคยา มอ ออ สาขารักษ์จันทน์', '8': 'คลินิคยา มอ ออ สาขาหน้าโรงเรียนสภาราชินี', '9': 'คลินิคยา มอ ออ สาขาหน้าบิ๊กซี' };
-        
-        const chiefComplaintsOptions = [
-            { value: '(01) Dizziness', label: 'Dizziness (เวียนศีรษะ)' }, { value: '(02) Headache', label: 'Headache (ปวดหัว)' },
-            { value: '(03) Pain in joint/muscle pain', label: 'ปวดข้อ/กล้ามเนื้อ' }, { value: '(04) Toothache', label: 'Toothache (ปวดฟัน)' },
-            { value: '(05) Abdominal pain (Menstrual)', label: 'ปวดประจำเดือน' }, { value: '(06) Stomachache', label: 'Stomachache (ปวดท้อง)' },
-            { value: '(07) Diarrhea', label: 'Diarrhea (ท้องเสีย)' }, { value: '(08) Constipation/Hemorrhoids', label: 'ท้องผูก/ริดสีดวงทวาร' },
-            { value: '(09) Dysuria', label: 'Dysuria (ปัสสาวะแสบขัด)' }, { value: '(10) Vaginal discharge', label: 'Vaginal discharge (ตกขาว)' },
-            { value: '(11) Wound', label: 'Wound (แผล)' }, { value: '(12) Skin rash', label: 'Skin rash (ผื่นผิวหนัง)' },
-            { value: '(13) Eye disorder', label: 'Eye disorder (อาการทางตา)' }, { value: '(14) Ear disorder', label: 'Ear disorder (อาการทางหู)' },
-            { value: '(15) Fever/cough/sore throat', label: 'ไข้ ไอ เจ็บคอ' }, { value: '(16) Covid-19', label: 'Covid-19 (ติดเชื้อโควิด)' },
-            { value: '(17) Rhinorrhea/ nasal congestion', label: 'น้ำมูก คัดจมูก' }, { value: '(18) Ulcer in mouth', label: 'Ulcer in mouth (แผลในปาก)' },
-            { value: '(19) Herpes simplex', label: 'Herpes simplex (ตุ่มน้ำใสที่ปาก)' }, { value: '(20) Burn', label: 'Burn (แผลน้ำร้อนลวก)' },
-            { value: '(21) Itchy skin/head', label: 'อาการคันผิวหนัง/ศีรษะ' }, { value: '(22) Helminthiasis', label: 'Helminthiasis (พยาธิ)' },
-            { value: '(23) Scabies', label: 'Scabies (หิด เหา)' }, { value: '(24) Cellulitis', label: 'Cellulitis (ฝี หนองที่ผิวหนัง)' },
-            { value: '(25) Beriberi', label: 'Beriberi (อาการชา/เหน็บชา)' }, { value: '(26) Insomnia', label: 'Insomnia (อาการนอนไม่หลับ)' },
-            { value: '(27) Motion sickness', label: 'Motion sickness (เมารถ เมาเรือ)' }, { value: '(28) Anorexia', label: 'Anorexia (เบื่ออาหาร)' },
-            { value: '(29) Nausea and vomitting', label: 'คลื่นไส้ อาเจียน' }, { value: '(30) Drug/food allergy/insect bite', label: 'อาการแพ้ยา/อาหาร/แมลงกัดต่อย' },
-            { value: '(31) Tobacco dependence', label: 'เจ็บป่วยจากการสูบบุหรี่' }, { value: '(32) Gingivitis', label: 'เหงือกอักเสบ/มีกลิ่นปาก' }, { value: '(33) Others', label: 'อาการเจ็บป่วยอื่นๆ' }
-        ];
+        const branchMap = { '1': 'สาขา 1 นาเมืองเพชร', '2': 'สาขา 2 ที่วัง', '3': 'สาขา 3 คลองเต็ง', '4': 'สาขา 4 นาโยง', '5': 'สาขา 5 ท่ากลาง', '6': 'สาขา 6 รัษฎา', '7': 'สาขา 7 รักษ์จันทน์', '8': 'สาขา 8 หน้า รร.สภาราชินี', '9': 'สาขา 9 หน้า บิ๊กซ๊' };
+        const fullBranchNameMap = { '1': 'คลินิคยา มอ ออ', '2': 'คลินิคยา มอ ออ 2', '3': 'คลินิคยา มอ ออ 3', '4': 'คลินิคยา มอ ออ 4', '5': 'คลินิคยา มอ ออ ท่ากลาง', '6': 'คลินิคยา มอ ออ สาขารัษฎา', '7': 'คลินิคยา มอ ออ สาขารักษ์จันทน์', '8': 'คลินิคยา มอ ออ สาขาหน้าโรงเรียนสภาราชินี', '9': 'คลินิคยา มอ ออ สาขาหน้าบิ๊กซี' };
+        
+        const chiefComplaintsOptions = [
+            { value: '(01) Dizziness', label: 'Dizziness (เวียนศีรษะ)' }, { value: '(02) Headache', label: 'Headache (ปวดหัว)' },
+            { value: '(03) Pain in joint/muscle pain', label: 'ปวดข้อ/กล้ามเนื้อ' }, { value: '(04) Toothache', label: 'Toothache (ปวดฟัน)' },
+            { value: '(05) Abdominal pain (Menstrual)', label: 'ปวดประจำเดือน' }, { value: '(06) Stomachache', label: 'Stomachache (ปวดท้อง)' },
+            { value: '(07) Diarrhea', label: 'Diarrhea (ท้องเสีย)' }, { value: '(08) Constipation/Hemorrhoids', label: 'ท้องผูก/ริดสีดวงทวาร' },
+            { value: '(09) Dysuria', label: 'Dysuria (ปัสสาวะแสบขัด)' }, { value: '(10) Vaginal discharge', label: 'Vaginal discharge (ตกขาว)' },
+            { value: '(11) Wound', label: 'Wound (แผล)' }, { value: '(12) Skin rash', label: 'Skin rash (ผื่นผิวหนัง)' },
+            { value: '(13) Eye disorder', label: 'Eye disorder (อาการทางตา)' }, { value: '(14) Ear disorder', label: 'Ear disorder (อาการทางหู)' },
+            { value: '(15) Fever/cough/sore throat', label: 'ไข้ ไอ เจ็บคอ' }, { value: '(16) Covid-19', label: 'Covid-19 (ติดเชื้อโควิด)' },
+            { value: '(17) Rhinorrhea/ nasal congestion', label: 'น้ำมูก คัดจมูก' }, { value: '(18) Ulcer in mouth', label: 'Ulcer in mouth (แผลในปาก)' },
+            { value: '(19) Herpes simplex', label: 'Herpes simplex (ตุ่มน้ำใสที่ปาก)' }, { value: '(20) Burn', label: 'Burn (แผลน้ำร้อนลวก)' },
+            { value: '(21) Itchy skin/head', label: 'อาการคันผิวหนัง/ศีรษะ' }, { value: '(22) Helminthiasis', label: 'Helminthiasis (พยาธิ)' },
+            { value: '(23) Scabies', label: 'Scabies (หิด เหา)' }, { value: '(24) Cellulitis', label: 'Cellulitis (ฝี หนองที่ผิวหนัง)' },
+            { value: '(25) Beriberi', label: 'Beriberi (อาการชา/เหน็บชา)' }, { value: '(26) Insomnia', label: 'Insomnia (อาการนอนไม่หลับ)' },
+            { value: '(27) Motion sickness', label: 'Motion sickness (เมารถ เมาเรือ)' }, { value: '(28) Anorexia', label: 'Anorexia (เบื่ออาหาร)' },
+            { value: '(29) Nausea and vomitting', label: 'คลื่นไส้ อาเจียน' }, { value: '(30) Drug/food allergy/insect bite', label: 'อาการแพ้ยา/อาหาร/แมลงกัดต่อย' },
+            { value: '(31) Tobacco dependence', label: 'เจ็บป่วยจากการสูบบุหรี่' }, { value: '(32) Gingivitis', label: 'เหงือกอักเสบ/มีกลิ่นปาก' }, { value: '(33) Others', label: 'อาการเจ็บป่วยอื่นๆ' }
+        ];
 
-        // --- UTILS ---
-        const getFirestoreCompat = () => firebase.firestore();
-        const getAuthCompat = () => firebase.auth();
-        const getCollectionCompat = (db, ...path) => db.collection(path.join('/'));
-        const getDocCompat = (db, ...path) => db.doc(path.join('/'));
-        const serverTimestampCompat = firebase.firestore.FieldValue.serverTimestamp;
+        // --- UTILS ---
+        const getFirestoreCompat = () => firebase.firestore();
+        const getAuthCompat = () => firebase.auth();
+        const getCollectionCompat = (db, ...path) => db.collection(path.join('/'));
+        const getDocCompat = (db, ...path) => db.doc(path.join('/'));
+        const serverTimestampCompat = firebase.firestore.FieldValue.serverTimestamp;
 
-        const LoadingSpinner = () => (
-            <div className="flex flex-col justify-center items-center p-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent mb-4"></div>
-                <p className="text-blue-700 font-semibold">กำลังดำเนินการ...</p>
-            </div>
-        );
+        const LoadingSpinner = () => (
+            <div className="flex flex-col justify-center items-center p-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent mb-4"></div>
+                <p className="text-blue-700 font-semibold">กำลังดำเนินการ...</p>
+            </div>
+        );
 
-        // --- HOOKS ---
-        const useFirebase = () => {
-            const [db, setDb] = useState(null);
-            const [auth, setAuth] = useState(null);
-            const [userId, setUserId] = useState(null);
-            const [isAuthReady, setIsAuthReady] = useState(false);
-            useEffect(() => {
-                try {
-                    firebase.initializeApp(USER_FIREBASE_CONFIG);
-                    const firestore = getFirestoreCompat();
-                    const authInstance = getAuthCompat();
-                    setDb(firestore); setAuth(authInstance);
-                    const unsubscribe = authInstance.onAuthStateChanged(async (user) => {
-                        if (!user) await authInstance.signInAnonymously();
-                        setUserId(authInstance.currentUser.uid);
-                        setIsAuthReady(true);
-                    });
-                    return () => unsubscribe();
-                } catch (e) { setIsAuthReady(true); }
-            }, []);
-            return { db, auth, userId, isAuthReady };
-        };
+        // --- HOOKS ---
+        const useFirebase = () => {
+            const [db, setDb] = useState(null);
+            const [auth, setAuth] = useState(null);
+            const [userId, setUserId] = useState(null);
+            const [isAuthReady, setIsAuthReady] = useState(false);
+            useEffect(() => {
+                try {
+                    firebase.initializeApp(USER_FIREBASE_CONFIG);
+                    const firestore = getFirestoreCompat();
+                    const authInstance = getAuthCompat();
+                    setDb(firestore); setAuth(authInstance);
+                    const unsubscribe = authInstance.onAuthStateChanged(async (user) => {
+                        if (!user) await authInstance.signInAnonymously();
+                        setUserId(authInstance.currentUser.uid);
+                        setIsAuthReady(true);
+                    });
+                    return () => unsubscribe();
+                } catch (e) { setIsAuthReady(true); }
+            }, []);
+            return { db, auth, userId, isAuthReady };
+        };
 
-        const useCaseData = (db, isAuthReady) => {
-            const [cases, setCases] = useState([]);
-            const [loading, setLoading] = useState(true);
-            useEffect(() => {
-                if (!db || !isAuthReady) return;
-                const unsubscribe = getCollectionCompat(db, 'artifacts', FIREBASE_PATH_APP_ID, 'public/data/cases')
-                    .orderBy('timestamp', 'desc')
-                    .onSnapshot((snapshot) => {
-                        setCases(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), timestamp: doc.data().timestamp?.toDate ? doc.data().timestamp.toDate().toLocaleDateString('th-TH') : 'N/A' })));
-                        setLoading(false);
-                    }, () => setLoading(false));
-                return () => unsubscribe();
-            }, [db, isAuthReady]);
-            return { cases, loading };
-        };
+        const useCaseData = (db, isAuthReady) => {
+            const [cases, setCases] = useState([]);
+            const [loading, setLoading] = useState(true);
+            useEffect(() => {
+                if (!db || !isAuthReady) return;
+                const unsubscribe = getCollectionCompat(db, 'artifacts', FIREBASE_PATH_APP_ID, 'public/data/cases')
+                    .orderBy('timestamp', 'desc')
+                    .onSnapshot((snapshot) => {
+                        setCases(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), timestamp: doc.data().timestamp?.toDate ? doc.data().timestamp.toDate().toLocaleDateString('th-TH') : 'N/A' })));
+                        setLoading(false);
+                    }, () => setLoading(false));
+                return () => unsubscribe();
+            }, [db, isAuthReady]);
+            return { cases, loading };
+        };
 
-        // --- COMPONENTS ---
-        const Footer = () => {
-            const [currentTime, setCurrentTime] = useState(new Date());
-            useEffect(() => { const timer = setInterval(() => setCurrentTime(new Date()), 1000); return () => clearInterval(timer); }, []);
-            return (
-                <footer className="mt-12 py-6 border-t no-print bg-white text-center text-sm text-gray-500 shadow-inner">
-                    <div className="max-w-7xl mx-auto px-4">
-                        <p className="font-medium">CMO-Case Management System (Powered by React & Firebase)</p>
-                        <p className="text-xs mt-1 text-gray-400">Develop by Opioid.Apisit | {currentTime.toLocaleString('th-TH')}</p>
-                    </div>
-                </footer>
-            );
-        };
+        // --- COMPONENTS ---
+        
+        // 1. Footer
+        const Footer = () => {
+            const [currentTime, setCurrentTime] = useState(new Date());
+            useEffect(() => { const timer = setInterval(() => setCurrentTime(new Date()), 1000); return () => clearInterval(timer); }, []);
+            return (
+                <footer className="mt-12 py-6 border-t no-print bg-white text-center text-sm text-gray-500 shadow-inner">
+                    <div className="max-w-7xl mx-auto px-4">
+                        <p className="font-medium">CMO-Case Management System (Powered by React & Firebase)</p>
+                        <p className="text-xs mt-1 text-gray-400">Develop by Opioid.Apisit | {currentTime.toLocaleString('th-TH')}</p>
+                    </div>
+                </footer>
+            );
+        };
 
-        const MenuCard = ({ title, icon, color, onClick, href }) => {
-            const content = (
-                <div className="menu-card group">
-                    <div className="icon-box" style={{backgroundColor: color}}>
-                        <i className={`fa-solid ${icon}`}></i>
-                    </div>
-                    <span className="menu-title group-hover:text-blue-600 transition-colors">{title}</span>
-                </div>
-            );
-            return href ? <a href={href} target="_blank" rel="noopener noreferrer" className="block h-full">{content}</a> : <div onClick={onClick} className="h-full block">{content}</div>;
-        };
+        // 2. Menu Card (Clean Style - No Emoji, Colored Box)
+        const MenuCard = ({ title, icon, color, onClick, href }) => {
+            const content = (
+                <div className="menu-card group">
+                    <div className="icon-box" style={{backgroundColor: color}}>
+                        <i className={`fa-solid ${icon}`}></i>
+                    </div>
+                    <span className="menu-title group-hover:text-blue-600 transition-colors">{title}</span>
+                </div>
+            );
+            return href ? <a href={href} target="_blank" rel="noopener noreferrer" className="block h-full">{content}</a> : <div onClick={onClick} className="h-full block">{content}</div>;
+        };
 
-        const renderReportBody = (caseData, getCurrentDate, treatmentBoxChecked, elementId) => (
-            <div id={elementId} className="p-8 font-kanit text-gray-900 bg-white" style={{ maxWidth: '210mm', margin: '0 auto', fontSize: '10pt', border: 'none' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
-                    <img src={LOGO_BASE_URL} alt="Header Logos" style={{ height: 'auto', maxHeight: '40px', display: 'block' }} onError={(e) => { e.target.style.display='none'; }} />
-                    <div style={{ fontSize: '10pt' }}><strong>เลขประจำตัวประชาชน:</strong> {caseData.cid || '...........................................'}</div>
-                </div>
-                <h2 className="text-lg font-bold text-center mb-2" style={{fontSize: '14pt', margin: '10px 0 15px 0', borderBottom: '1px solid #000', paddingBottom: '5px'}}>
-                    แบบฟอร์มการประเมินและส่งต่อผู้ป่วย (Pharmacist Referral Form: PhRF)
-                </h2>
-                <table className="w-full spsr-table border-collapse border border-gray-900 text-sm" style={{ tableLayout: 'fixed' }}>
-                    <tbody>
-                        <tr><td colSpan="4" className="border border-gray-900 p-2"><strong>ชื่อผู้ป่วย:</strong> {caseData.patient_name} | <strong>เพศ:</strong> {caseData.gender} | <strong>อายุ:</strong> {caseData.age} ปี | <strong>โทรศัพท์:</strong> {caseData.tel}</td></tr>
-                        <tr><td colSpan="4" className="border border-gray-900 p-2"><p><strong>ที่อยู่:</strong> {caseData.address}</p><p><strong>สิทธิการรักษาพยาบาล:</strong> {caseData.health_scheme} | <strong>เหตุผลในการส่งต่อ:</strong> {caseData.reason_for_referral}</p></td></tr>
-                        <tr><td colSpan="2" className="border border-gray-900 p-2 font-bold" style={{ backgroundColor: '#f0f0f0', textAlign: 'center' }}>การทบทวนรายการยาและผลิตภัณฑ์สุขภาพ</td><td colSpan="2" className="border border-gray-900 p-2 font-bold" style={{ backgroundColor: '#f0f0f0', textAlign: 'center' }}>รายละเอียดของการส่งต่อ</td></tr>
-                        <tr><td colSpan="2" className="border border-gray-900 p-2 align-top h-40"><div style={{ whiteSpace: 'pre-wrap' }}>{caseData.drug_review || ' - '}</div></td>
-                        <td colSpan="2" className="border border-gray-900 p-2 align-top"><p><strong>อาการสำคัญ:</strong> {caseData.chief_complaints}</p><p><strong>ประวัติการเจ็บป่วย:</strong> {caseData.history_of_illness}</p><p><strong>โรคประจำตัว:</strong> {caseData.chronic_disease}</p><p><strong>ประวัติแพ้ยา:</strong> {caseData.drug_allergy}</p><p><strong>ข้อมูลเพิ่มเติม:</strong> {caseData.additional_info}</p><p><strong>ปัญหาที่พบ:</strong> {caseData.problem_found}</p></td></tr>
-                        <tr><td colSpan="4" className="border border-gray-900 p-2 font-bold" style={{ backgroundColor: '#f0f0f0', textAlign: 'center' }}>การดำเนินการเบื้องต้นของเภสัชกร</td></tr>
-                        <tr><td colSpan="4" className="border border-gray-900 p-2 align-top">
-                            <p>[{treatmentBoxChecked('give_treatment')}] ให้การรักษาเบื้องต้น {caseData.initial_treatment?.includes('give_treatment') && caseData.treatment_note && `(**ระบุ: ${caseData.treatment_note}**)`}</p>
-                            <p>[{treatmentBoxChecked('give_advice')}] ให้คำแนะนำการใช้ยา/การดูแลตัวเอง {caseData.initial_treatment?.includes('give_advice') && caseData.advice_note && `(**ระบุ: ${caseData.advice_note}**)`}</p>
-                            <p>[{treatmentBoxChecked('other_action')}] อื่นๆ {caseData.initial_treatment?.includes('other_action') && caseData.other_note && `(**ระบุ: ${caseData.other_note}**)`}</p>
-                        </td></tr>
-                        <tr><td colSpan="4" className="p-4 pt-8 border-gray-900 text-right" style={{ borderTop: 'none', borderBottom: 'none' }}><div style={{ textAlign: 'center', marginTop: '30px' }}><p>(ลงชื่อ) .....................................................</p><p>เภสัชกรผู้ส่งต่อ: {caseData.pharmacist_name}</p><p>เลขประกอบวิชาชีพ: {caseData.license_no} | วันที่: {getCurrentDate()}</p></div><div style={{ textAlign: 'left', marginTop: '15px', borderTop: '1px solid #ccc', paddingTop: '5px' }}><p><strong>ส่งต่อจากร้านยา:</strong> {caseData.pharmacy_name} | <strong>โทรศัพท์:</strong> {caseData.pharmacy_tel}</p><p><strong>ที่อยู่ร้านยา:</strong> {caseData.pharmacy_address}</p></div></td></tr>
-                        <tr><td colSpan="4" className="p-2 border border-gray-900 header-row" style={{fontSize: '10pt', backgroundColor: '#f0f0f0', textAlign: 'center'}}><p>ขอความร่วมมือหน่วยงานรับผู้ป่วยเพื่อรักษาและตอบกลับต้นทางตามข้อมูลข้างต้น</p></td></tr>
-                    </tbody>
-                </table>
-            </div>
-        );
+        // 3. Referral Report Body (Shared for Print)
+        const renderReportBody = (caseData, getCurrentDate, treatmentBoxChecked, elementId) => (
+            <div id={elementId} className="p-8 font-kanit text-gray-900 bg-white" style={{ maxWidth: '210mm', margin: '0 auto', fontSize: '10pt', border: 'none' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
+                    <img src={LOGO_BASE_URL} alt="Header Logos" style={{ height: 'auto', maxHeight: '40px', display: 'block' }} onError={(e) => { e.target.style.display='none'; }} />
+                    <div style={{ fontSize: '10pt' }}><strong>เลขประจำตัวประชาชน:</strong> {caseData.cid || '...........................................'}</div>
+                </div>
+                <h2 className="text-lg font-bold text-center mb-2" style={{fontSize: '14pt', margin: '10px 0 15px 0', borderBottom: '1px solid #000', paddingBottom: '5px'}}>
+                    แบบฟอร์มการประเมินและส่งต่อผู้ป่วย (Pharmacist Referral Form: PhRF)
+                </h2>
+                <table className="w-full spsr-table border-collapse border border-gray-900 text-sm" style={{ tableLayout: 'fixed' }}>
+                    <tbody>
+                        <tr><td colSpan="4" className="border border-gray-900 p-2"><strong>ชื่อผู้ป่วย:</strong> {caseData.patient_name} | <strong>เพศ:</strong> {caseData.gender} | <strong>อายุ:</strong> {caseData.age} ปี | <strong>โทรศัพท์:</strong> {caseData.tel}</td></tr>
+                        <tr><td colSpan="4" className="border border-gray-900 p-2"><p><strong>ที่อยู่:</strong> {caseData.address}</p><p><strong>สิทธิการรักษาพยาบาล:</strong> {caseData.health_scheme} | <strong>เหตุผลในการส่งต่อ:</strong> {caseData.reason_for_referral}</p></td></tr>
+                        <tr><td colSpan="2" className="border border-gray-900 p-2 font-bold" style={{ backgroundColor: '#f0f0f0', textAlign: 'center' }}>การทบทวนรายการยาและผลิตภัณฑ์สุขภาพ</td><td colSpan="2" className="border border-gray-900 p-2 font-bold" style={{ backgroundColor: '#f0f0f0', textAlign: 'center' }}>รายละเอียดของการส่งต่อ</td></tr>
+                        <tr><td colSpan="2" className="border border-gray-900 p-2 align-top h-40"><div style={{ whiteSpace: 'pre-wrap' }}>{caseData.drug_review || ' - '}</div></td>
+                        <td colSpan="2" className="border border-gray-900 p-2 align-top"><p><strong>อาการสำคัญ:</strong> {caseData.chief_complaints}</p><p><strong>ประวัติการเจ็บป่วย:</strong> {caseData.history_of_illness}</p><p><strong>โรคประจำตัว:</strong> {caseData.chronic_disease}</p><p><strong>ประวัติแพ้ยา:</strong> {caseData.drug_allergy}</p><p><strong>ข้อมูลเพิ่มเติม:</strong> {caseData.additional_info}</p><p><strong>ปัญหาที่พบ:</strong> {caseData.problem_found}</p></td></tr>
+                        <tr><td colSpan="4" className="border border-gray-900 p-2 font-bold" style={{ backgroundColor: '#f0f0f0', textAlign: 'center' }}>การดำเนินการเบื้องต้นของเภสัชกร</td></tr>
+                        <tr><td colSpan="4" className="border border-gray-900 p-2 align-top">
+                            <p>[{treatmentBoxChecked('give_treatment')}] ให้การรักษาเบื้องต้น {caseData.initial_treatment.includes('give_treatment') && caseData.treatment_note && `(**ระบุ: ${caseData.treatment_note}**)`}</p>
+                            <p>[{treatmentBoxChecked('give_advice')}] ให้คำแนะนำการใช้ยา/การดูแลตัวเอง {caseData.initial_treatment.includes('give_advice') && caseData.advice_note && `(**ระบุ: ${caseData.advice_note}**)`}</p>
+                            <p>[{treatmentBoxChecked('other_action')}] อื่นๆ {caseData.initial_treatment.includes('other_action') && caseData.other_note && `(**ระบุ: ${caseData.other_note}**)`}</p>
+                        </td></tr>
+                        <tr><td colSpan="4" className="p-4 pt-8 border-gray-900 text-right" style={{ borderTop: 'none', borderBottom: 'none' }}><div style={{ textAlign: 'center', marginTop: '30px' }}><p>(ลงชื่อ) .....................................................</p><p>เภสัชกรผู้ส่งต่อ: {caseData.pharmacist_name}</p><p>เลขประกอบวิชาชีพ: {caseData.license_no} | วันที่: {getCurrentDate()}</p></div><div style={{ textAlign: 'left', marginTop: '15px', borderTop: '1px solid #ccc', paddingTop: '5px' }}><p><strong>ส่งต่อจากร้านยา:</strong> {caseData.pharmacy_name} | <strong>โทรศัพท์:</strong> {caseData.pharmacy_tel}</p><p><strong>ที่อยู่ร้านยา:</strong> {caseData.pharmacy_address}</p></div></td></tr>
+                        <tr><td colSpan="4" className="p-2 border border-gray-900 header-row" style={{fontSize: '10pt', backgroundColor: '#f0f0f0', textAlign: 'center'}}><p>ขอความร่วมมือหน่วยงานรับผู้ป่วยเพื่อรักษาและตอบกลับต้นทางตามข้อมูลข้างต้น</p></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        );
 
-        const ReferralPrintView = ({ caseData, onEdit, onFinalize }) => {
-            const getCurrentDate = () => new Date().toLocaleDateString('th-TH', { day: 'numeric', month: 'numeric', year: 'numeric' });
-            const treatmentBoxChecked = (name) => caseData.initial_treatment?.includes(name) ? '✓' : ''; 
-            return (
-                <div className="dashboard-container pt-8">
-                     <div className="form-section flex justify-between items-center no-print">
-                        <h2 className="text-xl font-bold text-gray-800"><i className="fa-solid fa-print mr-2 text-blue-600"></i> ตัวอย่างพิมพ์</h2>
-                         <div className="space-x-3">
-                            <button onClick={onEdit} className="btn-action btn-gray">ย้อนกลับ</button>
-                            <button onClick={onFinalize} className="btn-action btn-green">พิมพ์และเสร็จสิ้น</button>
-                         </div>
-                    </div>
-                    <div id="view-area" className="no-print bg-white shadow-lg p-2 rounded overflow-hidden mb-10">
-                        {renderReportBody(caseData, getCurrentDate, treatmentBoxChecked, 'view-area-content')}
-                    </div>
-                </div>
-            );
-        };
+        // 4. Referral Print View
+        const ReferralPrintView = ({ caseData, onEdit, onFinalize }) => {
+            const getCurrentDate = () => new Date().toLocaleDateString('th-TH', { day: 'numeric', month: 'numeric', year: 'numeric' });
+            const treatmentBoxChecked = (name) => caseData.initial_treatment.includes(name) ? '✓' : ''; 
+            return (
+                <div className="dashboard-container pt-8">
+                     <div className="form-section flex justify-between items-center no-print">
+                        <h2 className="text-xl font-bold text-gray-800"><i className="fa-solid fa-print mr-2 text-blue-600"></i> ตัวอย่างพิมพ์</h2>
+                         <div className="space-x-3">
+                            <button onClick={onEdit} className="btn-action btn-gray">ย้อนกลับ</button>
+                            <button onClick={onFinalize} className="btn-action btn-green">พิมพ์และเสร็จสิ้น</button>
+                         </div>
+                    </div>
+                    <div id="view-area" className="no-print bg-white shadow-lg p-2 rounded overflow-hidden mb-10">
+                        {renderReportBody(caseData, getCurrentDate, treatmentBoxChecked, 'view-area-content')}
+                    </div>
+                    {ReactDOM.createPortal(renderReportBody(caseData, getCurrentDate, treatmentBoxChecked, 'print-area'), document.body)}
+                </div>
+            );
+        };
 
-        // --- REFERRAL FORM COMPONENT (FIXED AND CLOSED TAGS) ---
-        const ReferralForm = ({ initialData, onCancel, onSendReport }) => {
-            const [formData, setFormData] = useState(initialData || {
-                pharmacy_name: fullBranchNameMap['1'], pharmacy_address: '', pharmacy_tel: '', pharmacist_name: '', license_no: 'ภ.',
-                patient_name: '', cid: '', gender: 'ชาย', age: '', address: '', tel: '', health_scheme: 'UC', reason_for_referral: 'further investigation/management',
-                drug_review: '', chief_complaints: '', history_of_illness: '', chronic_disease: '', drug_allergy: '', additional_info: '', problem_found: '',
-                initial_treatment: [], treatment_note: '', advice_note: '', other_note: ''
-            });
-            const [isSubmitting, setIsSubmitting] = useState(false);
+        // 5. Standard Report Print View
+        const StandardReportPrintView = ({ caseData, onHide, onPostPrint }) => {
+            useEffect(() => { const timer = setTimeout(() => { window.print(); onPostPrint(); onHide(); }, 500); return () => clearTimeout(timer); }, [onHide, onPostPrint]);
+            const formatDate = (ds) => { try { return new Date(ds + 'T00:00:00').toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' }); } catch { return ds; } };
+            const ccText = (Array.isArray(caseData.chief_complaints) ? caseData.chief_complaints.join('\n') : caseData.chief_complaints?.replace(/; /g, '\n')) || '-';
+            let printBranch = fullBranchNameMap[caseData.branch] || branchMap[caseData.branch] || 'ไม่ระบุสาขา';
+            return ReactDOM.createPortal(
+                <div id="print-area" className="p-8 font-kanit text-gray-900 bg-white" style={{ maxWidth: '210mm', margin: '0 auto' }}>
+                    <h1 className="text-xl font-bold text-center mb-4">แบบรายงานบันทึกการรักษาและติดตามผู้ป่วย (ร้านยาคลินิคยา มอ ออ)</h1>
+                    <table className="w-full report-table border-collapse border border-gray-500 text-sm">
+                        <thead><tr className="bg-gray-100"><td colSpan="2" className="p-2 border border-gray-500 font-semibold">สาขาที่รายงาน: {printBranch}</td><td colSpan="2" className="p-2 border border-gray-500 font-semibold">วันที่รายงาน: {caseData.timestamp}</td></tr></thead>
+                        <tbody>
+                            <tr><td colSpan="2" className="p-2 border border-gray-500">ชื่อ - สกุล: {caseData.patient_name}</td><td colSpan="2" className="p-2 border border-gray-500">โทรศัพท์: {caseData.tel || '-'}</td></tr>
+                            <tr><td className="p-2 border border-gray-500">น้ำหนัก: {caseData.weight || '-'} กก.</td><td className="p-2 border border-gray-500">ส่วนสูง: {caseData.height || '-'} ซม.</td><td colSpan="2" className="p-2 border border-gray-500">อายุ: {caseData.age || '-'} ปี</td></tr>
+                            <tr><td colSpan="4" className="p-2 border border-gray-500">โรคประจำตัว: {caseData.chronic_disease || '-'}</td></tr>
+                            <tr><td colSpan="4" className="p-2 border border-gray-500">ประวัติการแพ้ยา: {caseData.drug_allergy || '-'}</td></tr>
+                            <tr className="bg-blue-50"><td colSpan="4" className="p-2 border border-gray-500 font-bold">ส่วนที่ 2 การรักษา</td></tr>
+                            <tr><td colSpan="4" className="p-2 border border-gray-500 h-20 align-top"><span className="font-semibold">อาการสำคัญ:</span><div style={{ whiteSpace: 'pre-wrap' }}>{ccText}</div></td></tr>
+                            <tr><td colSpan="4" className="p-2 border border-gray-500 h-20 align-top"><span className="font-semibold">ข้อมูลจากการซักประวัติ:</span><div className="whitespace-pre-wrap">{caseData.history || '-'}</div></td></tr>
+                            <tr><td colSpan="4" className="p-2 border border-gray-500"><span className="font-semibold">การวินิจฉัยเบื้องต้น:</span><div>{caseData.diagnosis || '-'}</div></td></tr>
+                            <tr><td colSpan="4" className="p-2 border border-gray-500 h-20 align-top"><span className="font-semibold">การรักษา:</span><div className="whitespace-pre-wrap">{caseData.treatment || '-'}</div></td></tr>
+                            <tr className="bg-blue-50"><td colSpan="4" className="p-2 border border-gray-500 font-bold">ส่วนที่ 3 การติดตาม</td></tr>
+                            <tr><td colSpan="4" className="p-2 border border-gray-500"><span className="font-semibold">วันที่ติดตาม:</span> {formatDate(caseData.follow_up_date)}</td></tr>
+                            <tr><td colSpan="4" className="p-2 border border-gray-500 h-20 align-top"><span className="font-semibold">ผลการติดตาม:</span><div className="whitespace-pre-wrap">{caseData.follow_up_result || '-'}</div></td></tr>
+                            <tr><td colSpan="4" className="p-4 text-right"><p className="mt-8">ลงชื่อ..................................................</p><p>(เภสัชกร/ผู้รายงาน)</p></td></tr>
+                        </tbody>
+                    </table>
+                </div>, document.body
+            );
+        };
 
-            const handleChange = (e) => {
-                const { name, value, type, checked } = e.target;
-                if (type === 'checkbox') {
-                    setFormData(prev => ({ ...prev, initial_treatment: checked ? [...prev.initial_treatment, name] : prev.initial_treatment.filter(n => n !== name) }));
-                } else setFormData(prev => ({ ...prev, [name]: value }));
-            };
+        // 6. Referral Form (New Design)
+        const ReferralForm = ({ initialData, onCancel, onSendReport }) => {
+            const [formData, setFormData] = useState(initialData || {
+                pharmacy_name: fullBranchNameMap['1'], pharmacy_address: '', pharmacy_tel: '', pharmacist_name: '', license_no: 'ภ.',
+                patient_name: '', cid: '', gender: 'ชาย', age: '', address: '', tel: '', health_scheme: 'UC', reason_for_referral: 'further investigation/management',
+                drug_review: '', chief_complaints: '', history_of_illness: '', chronic_disease: '', drug_allergy: '', additional_info: '', problem_found: '',
+                initial_treatment: [], treatment_note: '', advice_note: '', other_note: ''
+            });
+            const [isSubmitting, setIsSubmitting] = useState(false);
+            const isEditMode = initialData != null;
 
-            const handleSubmit = (e) => {
-                e.preventDefault();
-                if (!formData.patient_name || !formData.pharmacist_name) { alert('กรุณากรอกชื่อผู้ป่วยและเภสัชกรผู้ส่งต่อ'); return; }
-                setIsSubmitting(true);
-                onSendReport(formData);
-            };
+            const handleChange = (e) => {
+                const { name, value, type, checked } = e.target;
+                if (type === 'checkbox') {
+                    setFormData(prev => ({ ...prev, initial_treatment: checked ? [...prev.initial_treatment, name] : prev.initial_treatment.filter(n => n !== name) }));
+                } else setFormData(prev => ({ ...prev, [name]: value }));
+            };
 
-            return (
-                <div className="dashboard-container pt-6">
-                    <button type="button" onClick={onCancel} className="mb-4 text-gray-500 hover:text-blue-600 font-medium flex items-center transition"><i className="fa-solid fa-arrow-left mr-2"></i> กลับหน้าหลัก</button>
-                    <div className="form-section">
-                         <h1 className="text-xl font-bold text-gray-800 mb-6 border-b pb-4"><i className="fa-solid fa-hospital-user mr-2 text-blue-600"></i> แบบฟอร์มส่งต่อผู้ป่วย (สปสช.)</h1>
-                         <form onSubmit={handleSubmit}>
-                            <div className="bg-blue-50/50 p-6 rounded-xl mb-6 border border-blue-100">
-                                <h2 className="font-bold text-blue-700 mb-4">ส่วนหัว: ข้อมูลผู้ส่งต่อ</h2>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div><label className="text-sm font-semibold text-gray-600">เภสัชกรผู้ส่งต่อ</label><input type="text" name="pharmacist_name" value={formData.pharmacist_name} onChange={handleChange} required className="input-field mt-1"/></div>
-                                    <div><label className="text-sm font-semibold text-gray-600">ร้านยา</label><select name="pharmacy_name" value={formData.pharmacy_name} onChange={handleChange} className="select-field mt-1">{Object.values(fullBranchNameMap).map(n => <option key={n} value={n}>{n}</option>)}</select></div>
-                                    <div><label className="text-sm font-semibold text-gray-600">เลขประกอบวิชาชีพ</label><input type="text" name="license_no" value={formData.license_no} onChange={handleChange} className="input-field mt-1"/></div>
-                                    <div><label className="text-sm font-semibold text-gray-600">เบอร์โทรศัพท์ร้านยา</label><input type="tel" name="pharmacy_tel" value={formData.pharmacy_tel} onChange={handleChange} className="input-field mt-1"/></div>
-                                    <div className="md:col-span-2"><label className="text-sm font-semibold text-gray-600">ที่อยู่ร้านยา</label><textarea name="pharmacy_address" rows="2" value={formData.pharmacy_address} onChange={handleChange} className="textarea-field mt-1"/></div>
-                                </div>
-                            </div>
-                            
-                            <h2 className="text-lg font-bold text-gray-700 mt-6 mb-3">ส่วนที่ 1: ข้อมูลทั่วไป</h2>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div className="md:col-span-3"><label className="text-sm font-semibold text-gray-600">ชื่อผู้ป่วย</label><input type="text" name="patient_name" value={formData.patient_name} onChange={handleChange} required className="input-field mt-1"/></div>
-                                <div><label className="text-sm font-semibold text-gray-600">เลข ปชช.</label><input type="text" name="cid" value={formData.cid} onChange={handleChange} maxLength="13" className="input-field mt-1"/></div>
-                                <div><label className="text-sm font-semibold text-gray-600">เพศ</label><select name="gender" value={formData.gender} onChange={handleChange} className="select-field mt-1"><option value="ชาย">ชาย</option><option value="หญิง">หญิง</option><option value="อื่นๆ">อื่นๆ</option></select></div>
-                                <div><label className="text-sm font-semibold text-gray-600">อายุ</label><input type="number" name="age" value={formData.age} onChange={handleChange} className="input-field mt-1"/></div>
-                                <div className="md:col-span-2"><label className="text-sm font-semibold text-gray-600">ที่อยู่</label><input type="text" name="address" value={formData.address} onChange={handleChange} className="input-field mt-1"/></div>
-                                <div><label className="text-sm font-semibold text-gray-600">เบอร์โทรศัพท์ผู้ป่วย</label><input type="tel" name="tel" value={formData.tel} onChange={handleChange} className="input-field mt-1"/></div>
-                            </div>
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                if (!formData.patient_name || !formData.pharmacist_name) { alert('กรุณากรอกชื่อผู้ป่วยและเภสัชกรผู้ส่งต่อ'); return; }
+                setIsSubmitting(true);
+                onSendReport(formData, 'referral').finally(() => setIsSubmitting(false));
+            };
 
-                            <div className="flex justify-end space-x-3 mt-6 border-t pt-4">
-                                <button type="button" onClick={onCancel} className="btn-action btn-gray">ยกเลิก</button>
-                                <button type="submit" disabled={isSubmitting} className="btn-action btn-blue">{isSubmitting ? 'กำลังบันทึก...' : 'ดูตัวอย่างพิมพ์'}</button>
-                            </div>
-                         </form>
-                    </div>
-                </div>
-            );
-        };
-
-        // --- MAIN APP COMPONENT FOR ROUTING & RENDERING ---
-        const App = () => {
-            const { db, isAuthReady } = useFirebase();
-            const { cases, loading } = useCaseData(db, isAuthReady);
-            const [currentView, setCurrentView] = useState('dashboard'); // dashboard, refer_form, print_preview
-            const [selectedCase, setSelectedCase] = useState(null);
-
-            const handleOpenReferForm = () => {
-                setSelectedCase(null);
-                setCurrentView('refer_form');
-            };
-
-            const handleSendReport = (data) => {
-                setSelectedCase(data);
-                setCurrentView('print_preview');
-                return Promise.resolve();
-            };
-
-            const handleFinalizePrint = () => {
-                window.print();
-                setCurrentView('dashboard');
-            };
-
-            return (
-                <div>
-                    {/* HEADER */}
-                    <header className="header-section">
-                        <div className="header-content">
-                            <img src={SHOP_LOGO_URL} alt="Shop Logo" className="shop-logo" onError={(e) => { e.target.src = "https://via.placeholder.com/60"; }} />
-                            <div>
-                                <h1 className="text-xl font-bold">ระบบบันทึกการรักษาและส่งต่อผู้ป่วย</h1>
-                                <p className="text-sm opacity-80">คลินิคยา มอ ออ จังหวัดตรัง</p>
-                            </div>
-                        </div>
-                    </header>
-
-                    {/* MAIN CONTENT AREA */}
-                    {currentView === 'dashboard' && (
-                        <div className="dashboard-container">
-                            <div className="menu-grid">
-                                <MenuCard title="แบบฟอร์มส่งต่อ (สปสช.)" icon="fa-hospital-user" color="#0284c7" onClick={handleOpenReferForm} />
-                                <MenuCard title="ลิงก์ไดรฟ์อัปโหลดเคส" icon="fa-folder-open" color="#16a34a" href={DRIVE_UPLOAD_CASE_URL} />
-                                <MenuCard title="ลิงก์ไดรฟ์ใบส่งต่อ" icon="fa-file-medical" color="#eab308" href={DRIVE_REFERRAL_UPLOAD_URL} />
-                            </div>
-
-                            {/* CASE LIST TABLE */}
-                            <div className="bg-white rounded-xl shadow-sm border p-6">
-                                <h3 className="font-bold text-lg mb-4 text-gray-700"><i className="fa-solid fa-clock-history mr-2 text-blue-600"></i> ประวัติเคสล่าสุด</h3>
-                                {loading ? <LoadingSpinner /> : (
-                                    <div className="overflow-x-auto">
-                                        <table className="w-full modern-table text-left">
-                                            <thead>
-                                                <tr>
-                                                    <th>วันที่</th>
-                                                    <th>ชื่อผู้ป่วย</th>
-                                                    <th>อาการสำคัญ</th>
-                                                    <th>ผู้รายงาน</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {cases.length === 0 ? (
-                                                    <tr><td colSpan="4" className="text-center py-6 text-gray-400">ยังไม่มีข้อมูลในระบบ</td></tr>
-                                                ) : cases.map((c) => (
-                                                    <tr key={c.id}>
-                                                        <td>{c.timestamp}</td>
-                                                        <td className="font-medium">{c.patient_name}</td>
-                                                        <td>{c.chief_complaints || '-'}</td>
-                                                        <td>{c.pharmacist_name || '-'}</td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    )}
-
-                    {currentView === 'refer_form' && (
-                        <ReferralForm initialData={selectedCase} onCancel={() => setCurrentView('dashboard')} onSendReport={handleSendReport} />
-                    )}
-
-                    {currentView === 'print_preview' && (
-                        <ReferralPrintView caseData={selectedCase} onEdit={() => setCurrentView('refer_form')} onFinalize={handleFinalizePrint} />
-                    )}
-
-                    <Footer />
-                </div>
-            );
-        };
-
-        // RENDER TO ROOT
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
-    </script>
-</body>
-</html>
+            return (
+                <div className="dashboard-container pt-6">
+                    <button onClick={onCancel} className="mb-4 text-gray-500 hover:text-blue-600 font-medium flex items-center transition"><i className="fa-solid fa-arrow-left mr-2"></i> กลับหน้าหลัก</button>
+                    <div className="form-section">
+                         <h1 className="text-xl font-bold text-gray-800 mb-6 border-b pb-4"><i className="fa-solid fa-hospital-user mr-2 text-blue-600"></i> แบบฟอร์มส่งต่อผู้ป่วย (สปสช.)</h1>
+                         <form onSubmit={handleSubmit}>
+                            <div className="bg-blue-50/50 p-6 rounded-xl mb-6 border border-blue-100">
+                                <h2 className="font-bold text-blue-700 mb-4">ส่วนหัว: ข้อมูลผู้ส่งต่อ</h2>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div><label className="text-sm font-semibold text-gray-600">เภสัชกรผู้ส่งต่อ</label><input type="text" name="pharmacist_name" value={formData.pharmacist_name} onChange={handleChange} required className="input-field mt-1"/></div>
+                                    <div><label className="text-sm font-semibold text-gray-600">ร้านยา</label><select name="pharmacy_name" value={formData.pharmacy_name} onChange={handleChange} className="select-field mt-1">{Object.values(fullBranchNameMap).map(n => <option key={n} value={n}>{n}</option>)}</select></div>
+                                    <div><label className="text-sm font-semibold text-gray-600">เลขประกอบวิชาชีพ</label><input type="text" name="license_no" value={formData.license_no} onChange={handleChange} className="input-field mt-1"/></div>
+                                    <div><label className="text-sm font-semibold text-gray-600">เบอร์โทรศัพท์ร้านยา</label><input type="tel" name="pharmacy_tel" value={formData.pharmacy_tel} onChange={handleChange} className="input-field mt-1"/></div>
+                                    <div className="md:col-span-2"><label className="text-sm font-semibold text-gray-600">ที่อยู่ร้านยา</label><textarea name="pharmacy_address" rows="2" value={formData.pharmacy_address} onChange={handleChange} className="textarea-field mt-1"/></div>
+                                </div>
+                            </div>
+                            
+                            <h2 className="text-lg font-bold text-gray-700 mt-6 mb-3">ส่วนที่ 1: ข้อมูลทั่วไป</h2>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="md:col-span-3"><label className="text-sm font-semibold text-gray-600">ชื่อผู้ป่วย</label><input type="text" name="patient_name" value={formData.patient_name} onChange={handleChange} required className="input-field mt-1"/></div>
+                                <div><label className="text-sm font-semibold text-gray-600">เลข ปชช.</label><input type="text" name="cid" value={formData.cid} onChange={handleChange} maxLength="13" className="input-field mt-1"/></div>
+                                <div><label className="text-sm font-semibold text-gray-600">เพศ</label><select name="gender" value={formData.gender} onChange={handleChange} className="select-field mt-1"><option value="ชาย">ชาย</option><option value="หญิง">หญิง</option><option value="อื่นๆ">อื่นๆ</option></select></div>
+                                <div><label className="text-sm font-semibold text-gray-600">อายุ</label><input type="number" name="age" value={formData.age} onChange={handleChange} className="input-field mt-1"/></div>
+                                <div className="md:col-span-2"><label className="text-sm font-semibold text-gray-600">ที่อยู่</label><input type="text" name="address" value={formData.address} onChange={handleChange} className="inp
