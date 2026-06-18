@@ -715,7 +715,7 @@
             const triggerAppsScriptRecord = async (caseData, isEdit) => {
                 if (APPS_SCRIPT_RECORD_URL.includes('YOUR_DEPLOYED')) return;
                 try { await fetch(APPS_SCRIPT_RECORD_URL, { method: 'POST', mode: 'cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...caseData, isEdit }) }); } 
-                catch (e) { alert(ข้อมูลถูกบันทึกใน Firebase แล้ว ยืนยันการบันทึกเป็น pdf ของท่าน); }
+                catch (e) { alert('ข้อมูลถูกบันทึกใน Firebase แล้ว ยืนยันการบันทึกเป็น pdf ของท่าน'); }
             };
 
             const handleReportSubmission = async (reportData, type) => {
