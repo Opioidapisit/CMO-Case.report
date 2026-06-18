@@ -282,20 +282,11 @@
                     const authInstance = getAuthCompat();
                     setDb(firestore); setAuth(authInstance);
                     const unsubscribe = authInstance.onAuthStateChanged(async (user) => {
-                try {
-                    if (!user) {
-                        const result = await authInstance.signInAnonymously();
-                        setUserId(result.user.uid);
-                    } else {
-                        setUserId(user.uid);
-                    }
-                } catch (err) {
-                    console.error("Auth Error:", err);
-                } finally {
-                    setIsAuthReady(true);
-                }
-            });                    
-            return () => unsubscribe();
+                        if (!user) await authInstance.signInAnonymously();
+                        setUserId(authInstance.currentUser.uid);
+                        setIsAuthReady(true);
+                    });
+                    return () => unsubscribe();
                 } catch (e) { setIsAuthReady(true); }
             }, []);
             return { db, auth, userId, isAuthReady };
@@ -773,7 +764,18 @@
         }
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+        try {
+    root.render(<App />);
+} catch(err) {
+    console.error(err);
+
+    document.getElementById('root').innerHTML = `
+        <div style="padding:20px;font-family:sans-serif">
+            <h2 style="color:red">เกิดข้อผิดพลาด</h2>
+            <pre>${err.message}</pre>
+        </div>
+    `;
+}
     </script>
 </body>
 </html>
