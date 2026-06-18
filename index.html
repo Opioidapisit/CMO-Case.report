@@ -540,7 +540,7 @@
                     <div className="form-section relative overflow-hidden">
                         <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-600 via-blue-400 to-blue-600"></div>
                         <h1 className="text-2xl font-bold text-gray-800 mb-6 border-b pb-4 mt-2">
-                             {isEditMode ? แก้ไขเคส: ${formData.patient_name} : 'บันทึกเคสใหม่'}
+                             {isEditMode ? `แก้ไขเคส: ${formData.patient_name}` : 'บันทึกเคสใหม่'}
                         </h1>
                         <form>
                             <h2 className="text-lg font-bold text-blue-700 mb-3">1. ข้อมูลการรายงาน</h2>
@@ -706,7 +706,7 @@
                         setCurrentCase(cases.find(c => c.id === docId) || { ...caseData, id: docId, timestamp: new Date().toLocaleDateString('th-TH') });
                         setShowPrintView(true);
                     } else {
-                        alert(อัปเดตเคส ${caseData.patient_name} สำเร็จ);
+                        alert(`อัปเดตเคส ${caseData.patient_name} สำเร็จ`);
                         setView('dashboard'); setCurrentCase(null);
                     }
                 } catch (e) { console.error(e); alert('เกิดข้อผิดพลาดในการบันทึก'); } finally { setIsSaving(false); }
@@ -724,7 +724,7 @@
                 setView('referral_print'); 
             };
             
-            const handleReferralFinalize = () => { window.print(); alert(เสร็จสิ้นการส่งต่อ! อย่าลืมอัปโหลดเคสต่อไป); setView('dashboard'); setCurrentCase(null); };
+            const handleReferralFinalize = () => { window.print(); alert('เสร็จสิ้นการส่งต่อ! อย่าลืมอัปโหลดเคสต่อไป'); setView('dashboard'); setCurrentCase(null); };
             
             const handleDelete = async (caseId) => {
                 if (!db || !userId) return;
