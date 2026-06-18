@@ -283,7 +283,7 @@
                     setDb(firestore); setAuth(authInstance);
                     const unsubscribe = authInstance.onAuthStateChanged(async (user) => {
                         if (!user) await authInstance.signInAnonymously();
-                        if (user) {setUserId(user.uid);}
+                        setUserId(authInstance.currentUser.uid);
                         setIsAuthReady(true);
                     });
                     return () => unsubscribe();
