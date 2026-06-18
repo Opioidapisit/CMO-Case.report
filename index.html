@@ -5,10 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ระบบบันทึกการรักษาและส่งต่อผู้ป่วย คลินิคยา มอ ออ จังหวัดตรัง</title>
     
-    <!-- Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
@@ -217,7 +215,7 @@
     <script type="text/babel">
         const { useState, useEffect, useMemo } = React;
         
-        // --- FIREBASE CONFIG & LOGIC (KEEP ORIGINAL) ---
+        // --- FIREBASE CONFIG & LOGIC ---
         const USER_FIREBASE_CONFIG = {
             apiKey: "AIzaSyB1ixH1epK4fnaLLbO10wsH_LTDDhraoyg",
             authDomain: "casereportcmo.firebaseapp.com",
@@ -231,7 +229,7 @@
         const DRIVE_UPLOAD_CASE_URL = 'https://drive.google.com/drive/folders/16mKp3MNJL-9JksYeV8DCZVd6kcM8yCkJ?usp=sharing'; 
         const DRIVE_REFERRAL_UPLOAD_URL = 'https://drive.google.com/drive/folders/11FPdw0jVNlgwPZKYdSVVJM0EyE2gvCyG?usp=sharing'; 
         const LOGO_BASE_URL = './head refer form.jpg'; 
-        const SHOP_LOGO_URL = 'ตรา.png'; // New Shop Logo
+        const SHOP_LOGO_URL = 'ตรา.png';
 
         const branchMap = { '1': 'สาขา 1 นาเมืองเพชร', '2': 'สาขา 2 ที่วัง', '3': 'สาขา 3 คลองเต็ง', '4': 'สาขา 4 นาโยง', '5': 'สาขา 5 ท่ากลาง', '6': 'สาขา 6 รัษฎา', '7': 'สาขา 7 รักษ์จันทน์', '8': 'สาขา 8 หน้า รร.สภาราชินี', '9': 'สาขา 9 หน้า บิ๊กซ๊' };
         const fullBranchNameMap = { '1': 'คลินิคยา มอ ออ', '2': 'คลินิคยา มอ ออ 2', '3': 'คลินิคยา มอ ออ 3', '4': 'คลินิคยา มอ ออ 4', '5': 'คลินิคยา มอ ออ ท่ากลาง', '6': 'คลินิคยา มอ ออ สาขารัษฎา', '7': 'คลินิคยา มอ ออ สาขารักษ์จันทน์', '8': 'คลินิคยา มอ ออ สาขาหน้าโรงเรียนสภาราชินี', '9': 'คลินิคยา มอ ออ สาขาหน้าบิ๊กซี' };
@@ -309,8 +307,6 @@
         };
 
         // --- COMPONENTS ---
-        
-        // 1. Footer
         const Footer = () => {
             const [currentTime, setCurrentTime] = useState(new Date());
             useEffect(() => { const timer = setInterval(() => setCurrentTime(new Date()), 1000); return () => clearInterval(timer); }, []);
@@ -324,7 +320,6 @@
             );
         };
 
-        // 2. Menu Card (Clean Style - No Emoji, Colored Box)
         const MenuCard = ({ title, icon, color, onClick, href }) => {
             const content = (
                 <div className="menu-card group">
@@ -337,7 +332,6 @@
             return href ? <a href={href} target="_blank" rel="noopener noreferrer" className="block h-full">{content}</a> : <div onClick={onClick} className="h-full block">{content}</div>;
         };
 
-        // 3. Referral Report Body (Shared for Print)
         const renderReportBody = (caseData, getCurrentDate, treatmentBoxChecked, elementId) => (
             <div id={elementId} className="p-8 font-kanit text-gray-900 bg-white" style={{ maxWidth: '210mm', margin: '0 auto', fontSize: '10pt', border: 'none' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
@@ -356,9 +350,9 @@
                         <td colSpan="2" className="border border-gray-900 p-2 align-top"><p><strong>อาการสำคัญ:</strong> {caseData.chief_complaints}</p><p><strong>ประวัติการเจ็บป่วย:</strong> {caseData.history_of_illness}</p><p><strong>โรคประจำตัว:</strong> {caseData.chronic_disease}</p><p><strong>ประวัติแพ้ยา:</strong> {caseData.drug_allergy}</p><p><strong>ข้อมูลเพิ่มเติม:</strong> {caseData.additional_info}</p><p><strong>ปัญหาที่พบ:</strong> {caseData.problem_found}</p></td></tr>
                         <tr><td colSpan="4" className="border border-gray-900 p-2 font-bold" style={{ backgroundColor: '#f0f0f0', textAlign: 'center' }}>การดำเนินการเบื้องต้นของเภสัชกร</td></tr>
                         <tr><td colSpan="4" className="border border-gray-900 p-2 align-top">
-                            <p>[{treatmentBoxChecked('give_treatment')}] ให้การรักษาเบื้องต้น {caseData.initial_treatment.includes('give_treatment') && caseData.treatment_note && `(**ระบุ: ${caseData.treatment_note}**)`}</p>
-                            <p>[{treatmentBoxChecked('give_advice')}] ให้คำแนะนำการใช้ยา/การดูแลตัวเอง {caseData.initial_treatment.includes('give_advice') && caseData.advice_note && `(**ระบุ: ${caseData.advice_note}**)`}</p>
-                            <p>[{treatmentBoxChecked('other_action')}] อื่นๆ {caseData.initial_treatment.includes('other_action') && caseData.other_note && `(**ระบุ: ${caseData.other_note}**)`}</p>
+                            <p>[{treatmentBoxChecked('give_treatment')}] ให้การรักษาเบื้องต้น {caseData.initial_treatment?.includes('give_treatment') && caseData.treatment_note && `(**ระบุ: ${caseData.treatment_note}**)`}</p>
+                            <p>[{treatmentBoxChecked('give_advice')}] ให้คำแนะนำการใช้ยา/การดูแลตัวเอง {caseData.initial_treatment?.includes('give_advice') && caseData.advice_note && `(**ระบุ: ${caseData.advice_note}**)`}</p>
+                            <p>[{treatmentBoxChecked('other_action')}] อื่นๆ {caseData.initial_treatment?.includes('other_action') && caseData.other_note && `(**ระบุ: ${caseData.other_note}**)`}</p>
                         </td></tr>
                         <tr><td colSpan="4" className="p-4 pt-8 border-gray-900 text-right" style={{ borderTop: 'none', borderBottom: 'none' }}><div style={{ textAlign: 'center', marginTop: '30px' }}><p>(ลงชื่อ) .....................................................</p><p>เภสัชกรผู้ส่งต่อ: {caseData.pharmacist_name}</p><p>เลขประกอบวิชาชีพ: {caseData.license_no} | วันที่: {getCurrentDate()}</p></div><div style={{ textAlign: 'left', marginTop: '15px', borderTop: '1px solid #ccc', paddingTop: '5px' }}><p><strong>ส่งต่อจากร้านยา:</strong> {caseData.pharmacy_name} | <strong>โทรศัพท์:</strong> {caseData.pharmacy_tel}</p><p><strong>ที่อยู่ร้านยา:</strong> {caseData.pharmacy_address}</p></div></td></tr>
                         <tr><td colSpan="4" className="p-2 border border-gray-900 header-row" style={{fontSize: '10pt', backgroundColor: '#f0f0f0', textAlign: 'center'}}><p>ขอความร่วมมือหน่วยงานรับผู้ป่วยเพื่อรักษาและตอบกลับต้นทางตามข้อมูลข้างต้น</p></td></tr>
@@ -367,10 +361,9 @@
             </div>
         );
 
-        // 4. Referral Print View
         const ReferralPrintView = ({ caseData, onEdit, onFinalize }) => {
             const getCurrentDate = () => new Date().toLocaleDateString('th-TH', { day: 'numeric', month: 'numeric', year: 'numeric' });
-            const treatmentBoxChecked = (name) => caseData.initial_treatment.includes(name) ? '✓' : ''; 
+            const treatmentBoxChecked = (name) => caseData.initial_treatment?.includes(name) ? '✓' : ''; 
             return (
                 <div className="dashboard-container pt-8">
                      <div className="form-section flex justify-between items-center no-print">
@@ -383,43 +376,11 @@
                     <div id="view-area" className="no-print bg-white shadow-lg p-2 rounded overflow-hidden mb-10">
                         {renderReportBody(caseData, getCurrentDate, treatmentBoxChecked, 'view-area-content')}
                     </div>
-                    {ReactDOM.createPortal(renderReportBody(caseData, getCurrentDate, treatmentBoxChecked, 'print-area'), document.body)}
                 </div>
             );
         };
 
-        // 5. Standard Report Print View
-        const StandardReportPrintView = ({ caseData, onHide, onPostPrint }) => {
-            useEffect(() => { const timer = setTimeout(() => { window.print(); onPostPrint(); onHide(); }, 500); return () => clearTimeout(timer); }, [onHide, onPostPrint]);
-            const formatDate = (ds) => { try { return new Date(ds + 'T00:00:00').toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' }); } catch { return ds; } };
-            const ccText = (Array.isArray(caseData.chief_complaints) ? caseData.chief_complaints.join('\n') : caseData.chief_complaints?.replace(/; /g, '\n')) || '-';
-            let printBranch = fullBranchNameMap[caseData.branch] || branchMap[caseData.branch] || 'ไม่ระบุสาขา';
-            return ReactDOM.createPortal(
-                <div id="print-area" className="p-8 font-kanit text-gray-900 bg-white" style={{ maxWidth: '210mm', margin: '0 auto' }}>
-                    <h1 className="text-xl font-bold text-center mb-4">แบบรายงานบันทึกการรักษาและติดตามผู้ป่วย (ร้านยาคลินิคยา มอ ออ)</h1>
-                    <table className="w-full report-table border-collapse border border-gray-500 text-sm">
-                        <thead><tr className="bg-gray-100"><td colSpan="2" className="p-2 border border-gray-500 font-semibold">สาขาที่รายงาน: {printBranch}</td><td colSpan="2" className="p-2 border border-gray-500 font-semibold">วันที่รายงาน: {caseData.timestamp}</td></tr></thead>
-                        <tbody>
-                            <tr><td colSpan="2" className="p-2 border border-gray-500">ชื่อ - สกุล: {caseData.patient_name}</td><td colSpan="2" className="p-2 border border-gray-500">โทรศัพท์: {caseData.tel || '-'}</td></tr>
-                            <tr><td className="p-2 border border-gray-500">น้ำหนัก: {caseData.weight || '-'} กก.</td><td className="p-2 border border-gray-500">ส่วนสูง: {caseData.height || '-'} ซม.</td><td colSpan="2" className="p-2 border border-gray-500">อายุ: {caseData.age || '-'} ปี</td></tr>
-                            <tr><td colSpan="4" className="p-2 border border-gray-500">โรคประจำตัว: {caseData.chronic_disease || '-'}</td></tr>
-                            <tr><td colSpan="4" className="p-2 border border-gray-500">ประวัติการแพ้ยา: {caseData.drug_allergy || '-'}</td></tr>
-                            <tr className="bg-blue-50"><td colSpan="4" className="p-2 border border-gray-500 font-bold">ส่วนที่ 2 การรักษา</td></tr>
-                            <tr><td colSpan="4" className="p-2 border border-gray-500 h-20 align-top"><span className="font-semibold">อาการสำคัญ:</span><div style={{ whiteSpace: 'pre-wrap' }}>{ccText}</div></td></tr>
-                            <tr><td colSpan="4" className="p-2 border border-gray-500 h-20 align-top"><span className="font-semibold">ข้อมูลจากการซักประวัติ:</span><div className="whitespace-pre-wrap">{caseData.history || '-'}</div></td></tr>
-                            <tr><td colSpan="4" className="p-2 border border-gray-500"><span className="font-semibold">การวินิจฉัยเบื้องต้น:</span><div>{caseData.diagnosis || '-'}</div></td></tr>
-                            <tr><td colSpan="4" className="p-2 border border-gray-500 h-20 align-top"><span className="font-semibold">การรักษา:</span><div className="whitespace-pre-wrap">{caseData.treatment || '-'}</div></td></tr>
-                            <tr className="bg-blue-50"><td colSpan="4" className="p-2 border border-gray-500 font-bold">ส่วนที่ 3 การติดตาม</td></tr>
-                            <tr><td colSpan="4" className="p-2 border border-gray-500"><span className="font-semibold">วันที่ติดตาม:</span> {formatDate(caseData.follow_up_date)}</td></tr>
-                            <tr><td colSpan="4" className="p-2 border border-gray-500 h-20 align-top"><span className="font-semibold">ผลการติดตาม:</span><div className="whitespace-pre-wrap">{caseData.follow_up_result || '-'}</div></td></tr>
-                            <tr><td colSpan="4" className="p-4 text-right"><p className="mt-8">ลงชื่อ..................................................</p><p>(เภสัชกร/ผู้รายงาน)</p></td></tr>
-                        </tbody>
-                    </table>
-                </div>, document.body
-            );
-        };
-
-        // 6. Referral Form (New Design)
+        // --- REFERRAL FORM COMPONENT (FIXED AND CLOSED TAGS) ---
         const ReferralForm = ({ initialData, onCancel, onSendReport }) => {
             const [formData, setFormData] = useState(initialData || {
                 pharmacy_name: fullBranchNameMap['1'], pharmacy_address: '', pharmacy_tel: '', pharmacist_name: '', license_no: 'ภ.',
@@ -428,7 +389,6 @@
                 initial_treatment: [], treatment_note: '', advice_note: '', other_note: ''
             });
             const [isSubmitting, setIsSubmitting] = useState(false);
-            const isEditMode = initialData != null;
 
             const handleChange = (e) => {
                 const { name, value, type, checked } = e.target;
@@ -441,12 +401,12 @@
                 e.preventDefault();
                 if (!formData.patient_name || !formData.pharmacist_name) { alert('กรุณากรอกชื่อผู้ป่วยและเภสัชกรผู้ส่งต่อ'); return; }
                 setIsSubmitting(true);
-                onSendReport(formData, 'referral').finally(() => setIsSubmitting(false));
+                onSendReport(formData);
             };
 
             return (
                 <div className="dashboard-container pt-6">
-                    <button onClick={onCancel} className="mb-4 text-gray-500 hover:text-blue-600 font-medium flex items-center transition"><i className="fa-solid fa-arrow-left mr-2"></i> กลับหน้าหลัก</button>
+                    <button type="button" onClick={onCancel} className="mb-4 text-gray-500 hover:text-blue-600 font-medium flex items-center transition"><i className="fa-solid fa-arrow-left mr-2"></i> กลับหน้าหลัก</button>
                     <div className="form-section">
                          <h1 className="text-xl font-bold text-gray-800 mb-6 border-b pb-4"><i className="fa-solid fa-hospital-user mr-2 text-blue-600"></i> แบบฟอร์มส่งต่อผู้ป่วย (สปสช.)</h1>
                          <form onSubmit={handleSubmit}>
@@ -468,301 +428,111 @@
                                 <div><label className="text-sm font-semibold text-gray-600">เพศ</label><select name="gender" value={formData.gender} onChange={handleChange} className="select-field mt-1"><option value="ชาย">ชาย</option><option value="หญิง">หญิง</option><option value="อื่นๆ">อื่นๆ</option></select></div>
                                 <div><label className="text-sm font-semibold text-gray-600">อายุ</label><input type="number" name="age" value={formData.age} onChange={handleChange} className="input-field mt-1"/></div>
                                 <div className="md:col-span-2"><label className="text-sm font-semibold text-gray-600">ที่อยู่</label><input type="text" name="address" value={formData.address} onChange={handleChange} className="input-field mt-1"/></div>
-                                <div><label className="text-sm font-semibold text-gray-600">โทรศัพท์</label><input type="tel" name="tel" value={formData.tel} onChange={handleChange} className="input-field mt-1"/></div>
-                                <div className="md:col-span-3"><label className="text-sm font-semibold text-gray-600">สิทธิการรักษา</label><select name="health_scheme" value={formData.health_scheme} onChange={handleChange} className="select-field mt-1"><option value="UC">UC</option><option value="ข้าราชการ">ข้าราชการ</option><option value="ประกันสังคม">ประกันสังคม</option></select></div>
-                                <div className="md:col-span-3"><label className="text-sm font-semibold text-gray-600">เหตุผลในการส่งต่อ</label><select name="reason_for_referral" value={formData.reason_for_referral} onChange={handleChange} className="select-field mt-1"><option value="further investigation/management">further investigation/management</option><option value="Drug-related problem">Drug-related problem</option><option value="Loss of follow-up">Loss of follow-up</option></select></div>
+                                <div><label className="text-sm font-semibold text-gray-600">เบอร์โทรศัพท์ผู้ป่วย</label><input type="tel" name="tel" value={formData.tel} onChange={handleChange} className="input-field mt-1"/></div>
                             </div>
 
-                            <h2 className="text-lg font-bold text-gray-700 mt-6 mb-3">ส่วนที่ 2: รายละเอียดการส่งต่อ</h2>
-                            <div className="grid gap-4">
-                                <div><label className="text-sm font-semibold text-gray-600">การทบทวนรายการยา</label><textarea name="drug_review" rows="2" value={formData.drug_review} onChange={handleChange} className="textarea-field mt-1"/></div>
-                                <div><label className="text-sm font-semibold text-gray-600">อาการสำคัญ</label><textarea name="chief_complaints" rows="2" value={formData.chief_complaints} onChange={handleChange} required className="textarea-field mt-1"/></div>
-                                <div><label className="text-sm font-semibold text-gray-600">ประวัติการเจ็บป่วย</label><textarea name="history_of_illness" rows="3" value={formData.history_of_illness} onChange={handleChange} className="textarea-field mt-1"/></div>
-                                <div className="grid md:grid-cols-2 gap-4">
-                                    <div><label className="text-sm font-semibold text-gray-600">โรคประจำตัว</label><input type="text" name="chronic_disease" value={formData.chronic_disease} onChange={handleChange} className="input-field mt-1"/></div>
-                                    <div><label className="text-sm font-semibold text-gray-600">ประวัติแพ้ยา</label><input type="text" name="drug_allergy" value={formData.drug_allergy} onChange={handleChange} className="input-field mt-1"/></div>
-                                </div>
-                                <div><label className="text-sm font-semibold text-gray-600">ข้อมูลเพิ่มเติม</label><textarea name="additional_info" rows="2" value={formData.additional_info} onChange={handleChange} className="textarea-field mt-1"/></div>
-                                <div><label className="text-sm font-semibold text-gray-600">ปัญหาที่พบ</label><textarea name="problem_found" rows="2" value={formData.problem_found} onChange={handleChange} className="textarea-field mt-1"/></div>
+                            <div className="flex justify-end space-x-3 mt-6 border-t pt-4">
+                                <button type="button" onClick={onCancel} className="btn-action btn-gray">ยกเลิก</button>
+                                <button type="submit" disabled={isSubmitting} className="btn-action btn-blue">{isSubmitting ? 'กำลังบันทึก...' : 'ดูตัวอย่างพิมพ์'}</button>
                             </div>
-
-                            <h2 className="text-lg font-bold text-gray-700 mt-6 mb-3">ส่วนที่ 3: การดำเนินการเบื้องต้น</h2>
-                            <div className="bg-gray-50 p-4 rounded-xl space-y-3">
-                                {['give_treatment', 'give_advice', 'other_action'].map(action => (
-                                    <div key={action} className="flex flex-col sm:flex-row sm:items-center gap-2">
-                                        <div className="flex items-center min-w-[200px]">
-                                            <input type="checkbox" name={action} checked={formData.initial_treatment.includes(action)} onChange={handleChange} className="w-5 h-5 accent-blue-600 mr-2"/>
-                                            <span className="text-sm font-medium text-gray-700">{action === 'give_treatment' ? 'ให้การรักษาเบื้องต้น' : action === 'give_advice' ? 'ให้คำแนะนำ' : 'อื่นๆ'}</span>
-                                        </div>
-                                        <input type="text" name={action === 'give_treatment' ? 'treatment_note' : action === 'give_advice' ? 'advice_note' : 'other_note'} value={formData[action === 'give_treatment' ? 'treatment_note' : action === 'give_advice' ? 'advice_note' : 'other_note']} onChange={handleChange} placeholder="ระบุรายละเอียด..." className="input-field !py-1 flex-grow"/>
-                                    </div>
-                                ))}
-                            </div>
-
-                            <button type="submit" disabled={isSubmitting} className="w-full mt-8 btn-action btn-blue w-full py-4 text-lg">
-                                <span className="text-xl mr-2">🖨️</span> {isSubmitting ? 'กำลังจัดเตรียมรายงาน...' : 'ตรวจสอบตัวอย่างพิมพ์ (ก่อนส่งต่อ)'}
-                            </button>
-                        </form>
+                         </form>
                     </div>
                 </div>
             );
         };
 
-        // 7. Case Form (New Design)
-        const CaseForm = ({ initialCase, onSave, onCancel, onDelete }) => {
-            const [formData, setFormData] = useState(initialCase ? { ...initialCase, chief_complaints: typeof initialCase.chief_complaints === 'string' ? initialCase.chief_complaints.split('; ').filter(Boolean) : initialCase.chief_complaints || [] } : { branch: '1', reporter: '', patient_name: '', tel: '', age: '', weight: '', height: '', chronic_disease: '', drug_allergy: '', chief_complaints: [], history: '', diagnosis: '', treatment: '', follow_up_date: '', follow_up_result: '', status: 'รอติดตาม' });
-            const [isSubmitting, setIsSubmitting] = useState(false);
-            const isEditMode = initialCase !== null;
-
-            const handleChange = (e) => {
-                const { name, value, type, checked } = e.target;
-                if (type === 'checkbox') {
-                    setFormData(prev => ({ ...prev, chief_complaints: checked ? [...new Set([...prev.chief_complaints, value])] : prev.chief_complaints.filter(c => c !== value) }));
-                } else setFormData(prev => ({ ...prev, [name]: value }));
-            };
-
-            const handleSubmit = (e, newStatus = null, shouldDelete = false) => {
-                e.preventDefault();
-                if (!formData.patient_name || !formData.branch || !formData.reporter || formData.chief_complaints.length === 0) { alert('กรุณากรอกข้อมูลผู้ป่วย, สาขา, ผู้รายงาน และอาการสำคัญ'); return; }
-                if (shouldDelete) { onDelete(formData.id); return; }
-                if (isSubmitting) return;
-                setIsSubmitting(true);
-                const finalData = { ...formData, chief_complaints: Array.isArray(formData.chief_complaints) ? formData.chief_complaints.join('; ') : formData.chiefComplaints, status: newStatus || formData.status };
-                if (newStatus === 'ปิดเคสแล้ว') {
-                    if(confirm("บันทึกสถานะ 'ปิดเคสแล้ว' เรียบร้อย ต้องการพิมพ์รายงานทันทีหรือไม่?")) onSave(finalData, isEditMode, true);
-                    else setIsSubmitting(false);
-                } else { onSave(finalData, isEditMode); setIsSubmitting(false); }
-            };
-
-            return (
-                <div className="dashboard-container pt-6">
-                    <button onClick={onCancel} className="mb-4 text-gray-500 hover:text-blue-600 font-medium flex items-center transition"><i className="fa-solid fa-arrow-left mr-2"></i> กลับหน้าหลัก</button>
-                    <div className="form-section relative overflow-hidden">
-                        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-600 via-blue-400 to-blue-600"></div>
-                        <h1 className="text-2xl font-bold text-gray-800 mb-6 border-b pb-4 mt-2">
-                             {isEditMode ? `แก้ไขเคส: ${formData.patient_name}` : 'บันทึกเคสใหม่'}
-                        </h1>
-                        <form>
-                            <h2 className="text-lg font-bold text-blue-700 mb-3">1. ข้อมูลการรายงาน</h2>
-                            <div className="grid md:grid-cols-2 gap-4 mb-6 bg-blue-50/50 p-4 rounded-xl border border-blue-100">
-                                <div><label className="text-sm font-semibold text-gray-600">สาขาที่รายงาน *</label><select name="branch" value={formData.branch} onChange={handleChange} className="select-field mt-1">{Object.keys(branchMap).map(id => <option key={id} value={id}>{branchMap[id]}</option>)}</select></div>
-                                <div><label className="text-sm font-semibold text-gray-600">ผู้รายงาน *</label><input type="text" name="reporter" value={formData.reporter} onChange={handleChange} className="input-field mt-1"/></div>
-                            </div>
-                            
-                            <h2 className="text-lg font-bold text-blue-700 mb-3">2. ข้อมูลผู้ป่วยและประวัติ</h2>
-                            <div className="grid md:grid-cols-3 gap-4 mb-6">
-                                <div className="md:col-span-3"><label className="text-sm font-semibold text-gray-600">ชื่อ-สกุล ผู้ป่วย *</label><input type="text" name="patient_name" value={formData.patient_name} onChange={handleChange} className="input-field mt-1"/></div>
-                                <div><label className="text-sm font-semibold text-gray-600">เบอร์โทรศัพท์</label><input type="tel" name="tel" value={formData.tel} onChange={handleChange} className="input-field mt-1"/></div>
-                                <div><label className="text-sm font-semibold text-gray-600">อายุ</label><input type="number" name="age" value={formData.age} onChange={handleChange} className="input-field mt-1"/></div>
-                                <div><label className="text-sm font-semibold text-gray-600">น้ำหนัก (กก.)</label><input type="number" name="weight" value={formData.weight} onChange={handleChange} className="input-field mt-1"/></div>
-                                <div><label className="text-sm font-semibold text-gray-600">ส่วนสูง (ซม.)</label><input type="number" name="height" value={formData.height} onChange={handleChange} className="input-field mt-1"/></div>
-                                <div className="md:col-span-2"><label className="text-sm font-semibold text-gray-600">โรคประจำตัว</label><input type="text" name="chronic_disease" value={formData.chronic_disease} onChange={handleChange} className="input-field mt-1"/></div>
-                                <div><label className="text-sm font-semibold text-gray-600">ประวัติแพ้ยา</label><input type="text" name="drug_allergy" value={formData.drug_allergy} onChange={handleChange} className="input-field mt-1"/></div>
-                            </div>
-
-                            <h2 className="text-lg font-bold text-blue-700 mb-3">3. รายละเอียดเคสและการรักษา</h2>
-                            <div className="grid gap-4 mb-6">
-                                <div>
-                                    <label className="text-sm font-semibold text-gray-600 mb-2 block">อาการสำคัญ (เลือกได้มากกว่า 1) *</label>
-                                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 h-56 overflow-y-auto p-4 border border-gray-200 rounded-xl bg-gray-50">
-                                        {chiefComplaintsOptions.map(opt => (
-                                            <label key={opt.value} className="flex items-center space-x-2 cursor-pointer p-1 hover:bg-white rounded transition">
-                                                <input type="checkbox" name="chief_complaints" value={opt.value} checked={formData.chief_complaints.includes(opt.value)} onChange={handleChange} className="w-4 h-4 accent-blue-600"/>
-                                                <span className="text-sm text-gray-700">{opt.label}</span>
-                                            </label>
-                                        ))}
-                                    </div>
-                                </div>
-                                <div><label className="text-sm font-semibold text-gray-600">ผลการซักประวัติ</label><textarea name="history" rows="3" value={formData.history} onChange={handleChange} className="textarea-field mt-1"/></div>
-                                <div><label className="text-sm font-semibold text-gray-600">วินิจฉัย</label><input type="text" name="diagnosis" value={formData.diagnosis} onChange={handleChange} className="input-field mt-1"/></div>
-                                <div><label className="text-sm font-semibold text-gray-600">วิธีการรักษา</label><textarea name="treatment" rows="3" value={formData.treatment} onChange={handleChange} className="textarea-field mt-1"/></div>
-                            </div>
-
-                            <h2 className="text-lg font-bold text-blue-700 mb-3">4. การติดตามอาการ</h2>
-                            <div className="grid md:grid-cols-2 gap-4 mb-8 bg-orange-50/50 p-4 rounded-xl border border-orange-100">
-                                <div><label className="text-sm font-semibold text-gray-600">วันที่ติดตามอาการ</label><input type="date" name="follow_up_date" value={formData.follow_up_date} onChange={handleChange} className="input-field mt-1"/></div>
-                                <div className="md:col-span-2"><label className="text-sm font-semibold text-gray-600">ผลการติดตาม (บันทึกเมื่อติดตามเรียบร้อย)</label><textarea name="follow_up_result" rows="2" value={formData.follow_up_result} onChange={handleChange} className="textarea-field mt-1"/></div>
-                            </div>
-
-                            <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t">
-                                <button type="button" onClick={(e) => handleSubmit(e, 'รอติดตาม')} disabled={isSubmitting} className="flex-1 btn-action btn-blue">💾 บันทึก/พักเคส (รอติดตาม)</button>
-                                <button type="button" onClick={(e) => handleSubmit(e, 'ปิดเคสแล้ว')} disabled={isSubmitting} className="flex-1 btn-action btn-green">🖨️ ปิดเคส & ออกรายงาน</button>
-                                {isEditMode ? 
-                                    <button type="button" onClick={(e) => handleSubmit(e, null, true)} disabled={isSubmitting} className="flex-1 btn-action btn-red">🗑️ ลบเคส</button> :
-                                    <button type="button" onClick={onCancel} disabled={isSubmitting} className="flex-1 btn-action btn-gray">❌ ยกเลิก</button>
-                                }
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            );
-        };
-
-        // 8. Dashboard (Balanced Grid)
-        const Dashboard = ({ cases, loading, onAddCase, onEditCase, onReport }) => {
-            const [searchTerm, setSearchTerm] = useState('');
-            const [branchFilter, setBranchFilter] = useState(''); 
-            const filteredCases = useMemo(() => {
-                let filtered = cases.filter(c => c.patient_name.toLowerCase().includes(searchTerm.toLowerCase()) || (c.tel && c.tel.includes(searchTerm)));
-                if (branchFilter) filtered = filtered.filter(c => c.branch === branchFilter);
-                return filtered.sort((a, b) => {
-                    if (a.status === 'รอติดตาม' && b.status !== 'รอติดตาม') return -1;
-                    if (a.status !== 'รอติดตาม' && b.status === 'รอติดตาม') return 1;
-                    return (b.timestamp || '').localeCompare(a.timestamp || ''); 
-                });
-            }, [cases, searchTerm, branchFilter]);
-            const pendingCount = filteredCases.filter(c => c.status === 'รอติดตาม').length;
-
-            if (loading) return <LoadingSpinner />;
-
-            return (
-                <div className="dashboard-container">
-                    {/* Menu Grid - Balanced Size */}
-                    <div className="menu-grid">
-                        <MenuCard title="เพิ่มเคสใหม่" icon="fa-plus" color="#10b981" onClick={onAddCase} />
-                        <MenuCard title="Up รายงานเคส" icon="fa-upload" color="#f43f5e" href={DRIVE_UPLOAD_CASE_URL} />
-                        <MenuCard title="ส่งต่อผู้ป่วย" icon="fa-ambulance" color="#0ea5e9" onClick={() => onReport('referral')} />
-                        <MenuCard title="Up รายงานส่งต่อ" icon="fa-file-medical" color="#f97316" href={DRIVE_REFERRAL_UPLOAD_URL} />
-                        <MenuCard title="บัตรแพ้ยา" icon="fa-id-card" color="#d946ef" href="https://opioidapisit.github.io/NaranjoADR/" />
-                    </div>
-
-                    <div className="form-section">
-                        <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-                            <h2 className="text-xl font-bold text-gray-800">รายการเคสทั้งหมด</h2>
-                            <div className="flex gap-2 w-full md:w-auto">
-                                <input type="text" placeholder="ค้นหาชื่อ, เบอร์..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="input-field !py-2 !w-full md:!w-64" />
-                                <select value={branchFilter} onChange={(e) => setBranchFilter(e.target.value)} className="select-field !py-2 !w-auto">
-                                    <option value="">ทุกสาขา</option>
-                                    {Object.keys(branchMap).map(id => <option key={id} value={id}>{branchMap[id]}</option>)}
-                                </select>
-                            </div>
-                        </div>
-
-                        <div className="flex gap-4 mb-4 text-sm font-medium">
-                            <span className="text-gray-500">สถานะเคส:</span>
-                            <span className="text-orange-700 bg-orange-100 px-3 py-1 rounded-full">รอติดตาม ({pendingCount})</span>
-                            <span className="text-green-700 bg-green-100 px-3 py-1 rounded-full">ปิดเคส ({filteredCases.length - pendingCount})</span>
-                        </div>
-
-                        <div className="overflow-x-auto rounded-lg border border-gray-200">
-                            <table className="min-w-full modern-table">
-                                <thead>
-                                    <tr>
-                                        <th>ชื่อ - สกุล</th>
-                                        <th className="hidden sm:table-cell">สาขา</th> 
-                                        <th>อาการสำคัญ</th>
-                                        <th className="hidden lg:table-cell">วันที่</th>
-                                        <th>สถานะ</th>
-                                        <th className="text-right"></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {filteredCases.length > 0 ? filteredCases.map(c => (
-                                        <tr key={c.id} onClick={() => onEditCase(c)} className="cursor-pointer transition">
-                                            <td className="font-medium text-gray-900">{c.patient_name}</td>
-                                            <td className="text-sm text-gray-500 hidden sm:table-cell">{branchMap[c.branch]}</td> 
-                                            <td className="text-sm text-gray-700 truncate max-w-xs">{c.chief_complaints?.split(';')[0]}</td>
-                                            <td className="text-sm text-gray-500 hidden lg:table-cell">{c.timestamp}</td>
-                                            <td><span className={`px-3 py-1 text-xs font-bold rounded-full ${c.status === 'รอติดตาม' ? 'bg-orange-100 text-orange-800' : 'bg-green-100 text-green-800'}`}>{c.status}</span></td>
-                                            <td className="text-right text-blue-600"><i className="fa-solid fa-chevron-right"></i></td>
-                                        </tr>
-                                    )) : (
-                                        <tr><td colSpan="6" className="text-center p-8 text-gray-400">ไม่พบข้อมูล</td></tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            );
-        };
-
-        // --- MAIN APP ---
-        function App() {
-            const { db, userId, isAuthReady } = useFirebase();
+        // --- MAIN APP COMPONENT FOR ROUTING & RENDERING ---
+        const App = () => {
+            const { db, isAuthReady } = useFirebase();
             const { cases, loading } = useCaseData(db, isAuthReady);
-            const [view, setView] = useState('dashboard');
-            const [currentCase, setCurrentCase] = useState(null); 
-            const [showPrintView, setShowPrintView] = useState(false); 
-            const [isSaving, setIsSaving] = useState(false);
-            
-            if (!isAuthReady && (!USER_FIREBASE_CONFIG.apiKey || USER_FIREBASE_CONFIG.apiKey === "YOUR_API_KEY")) return <div className="p-12 text-center text-red-500 font-bold">Firebase Config Error</div>;
+            const [currentView, setCurrentView] = useState('dashboard'); // dashboard, refer_form, print_preview
+            const [selectedCase, setSelectedCase] = useState(null);
 
-            const handleSave = async (caseData, isEdit, shouldPrint = false) => {
-                if (!db || !userId) { alert('ระบบยังไม่พร้อม'); return; }
-                setIsSaving(true);
-                try {
-                    let docId = caseData.id;
-                    const colRef = getCollectionCompat(db, 'artifacts', FIREBASE_PATH_APP_ID, 'public/data/cases');
-                    if (isEdit) {
-                        const { id, timestamp, ...dataToUpdate } = caseData; 
-                        await getDocCompat(db, 'artifacts', FIREBASE_PATH_APP_ID, 'public/data/cases', caseData.id).update(dataToUpdate);
-                    } else {
-                        const newDocRef = await colRef.add({ ...caseData, timestamp: serverTimestampCompat(), userId });
-                        docId = newDocRef.id;
-                    }
-                    if (shouldPrint) {
-                        triggerAppsScriptRecord({ ...caseData, id: docId, status: 'ปิดเคสแล้ว' }, isEdit);
-                        setCurrentCase(cases.find(c => c.id === docId) || { ...caseData, id: docId, timestamp: new Date().toLocaleDateString('th-TH') });
-                        setShowPrintView(true);
-                    } else {
-                        alert(`อัปเดตเคส ${caseData.patient_name} สำเร็จ`);
-                        setView('dashboard'); setCurrentCase(null);
-                    }
-                } catch (e) { console.error(e); alert('เกิดข้อผิดพลาดในการบันทึก'); } finally { setIsSaving(false); }
-            };
-            
-            const triggerAppsScriptRecord = async (caseData, isEdit) => {
-                if (APPS_SCRIPT_RECORD_URL.includes('YOUR_DEPLOYED')) return;
-                try { await fetch(APPS_SCRIPT_RECORD_URL, { method: 'POST', mode: 'cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...caseData, isEdit }) }); } 
-                catch (e) { alert(`ข้อมูลถูกบันทึกใน Firebase แล้ว ยืนยันการบันทึกเป็น pdf ของท่าน`); }
+            const handleOpenReferForm = () => {
+                setSelectedCase(null);
+                setCurrentView('refer_form');
             };
 
-            const handleReportSubmission = async (reportData, type) => {
-                setIsSaving(false);
-                setCurrentCase({ ...reportData, timestamp: new Date().toLocaleDateString('th-TH') }); 
-                setView('referral_print'); 
+            const handleSendReport = (data) => {
+                setSelectedCase(data);
+                setCurrentView('print_preview');
+                return Promise.resolve();
             };
-            
-            const handleReferralFinalize = () => { window.print(); alert(`เสร็จสิ้นการส่งต่อ! อย่าลืมอัปโหลดเคสต่อไป`); setView('dashboard'); setCurrentCase(null); };
-            
-            const handleDelete = async (caseId) => {
-                if (!db || !userId) return;
-                try { await getDocCompat(db, 'artifacts', FIREBASE_PATH_APP_ID, 'public/data/cases', caseId).delete(); alert('ลบเคสสำเร็จ'); setView('dashboard'); setCurrentCase(null); } catch (e) { alert('ลบไม่สำเร็จ'); }
+
+            const handleFinalizePrint = () => {
+                window.print();
+                setCurrentView('dashboard');
             };
-            
-            let content;
-            if (view === 'new_case' || view === 'edit_case') content = <CaseForm initialCase={currentCase} onSave={handleSave} onCancel={() => { setView('dashboard'); setCurrentCase(null); }} onDelete={handleDelete}/>;
-            else if (view === 'referral_form') content = <ReferralForm initialData={currentCase} onCancel={() => {setView('dashboard'); setCurrentCase(null);}} onSendReport={handleReportSubmission}/>;
-            else if (view === 'referral_print' && currentCase) content = <ReferralPrintView caseData={currentCase} onEdit={() => setView('referral_form')} onFinalize={handleReferralFinalize}/>;
-            else content = <Dashboard cases={cases} loading={loading} onAddCase={() => {setView('new_case'); setCurrentCase(null);}} onEditCase={(c) => { setCurrentCase(c); setView('edit_case'); }} onReport={(type) => type === 'referral' ? setView('referral_form') : alert('ระบบรายงาน ADR อยู่ระหว่างการพัฒนา')}/>;
 
             return (
                 <div>
-                     {/* Modern Header with Logo */}
-                     <header className="header-section no-print">
+                    {/* HEADER */}
+                    <header className="header-section">
                         <div className="header-content">
-                            {/* Logo: Fallback if image fails */}
-                            <img src={SHOP_LOGO_URL} alt="ตรา" className="shop-logo" onError={(e) => { e.target.style.display='none'; }} />
+                            <img src={SHOP_LOGO_URL} alt="Shop Logo" className="shop-logo" onError={(e) => { e.target.src = "https://via.placeholder.com/60"; }} />
                             <div>
-                                <h1 className="text-2xl font-bold tracking-tight mb-1">ระบบบันทึกการรักษาและส่งต่อผู้ป่วย</h1>
-                                <p className="text-blue-100 text-sm opacity-90">คลินิคยา มอ ออ จังหวัดตรัง</p>
+                                <h1 className="text-xl font-bold">ระบบบันทึกการรักษาและส่งต่อผู้ป่วย</h1>
+                                <p className="text-sm opacity-80">คลินิคยา มอ ออ จังหวัดตรัง</p>
                             </div>
                         </div>
                     </header>
 
-                    {/* Main Content Area */}
-                    {content}
-                    
-                    {/* Overlays */}
-                    {showPrintView && currentCase && <StandardReportPrintView caseData={currentCase} onHide={() => setShowPrintView(false)} onPostPrint={() => { setShowPrintView(false); setView('dashboard'); setCurrentCase(null); }} />}
-                    {isSaving && <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-[100] no-print"><div className="bg-white p-8 rounded-xl shadow-2xl flex flex-col items-center"><LoadingSpinner /><span className="text-gray-800 font-bold mt-4">กำลังบันทึกข้อมูล...</span></div></div>}
-                    
+                    {/* MAIN CONTENT AREA */}
+                    {currentView === 'dashboard' && (
+                        <div className="dashboard-container">
+                            <div className="menu-grid">
+                                <MenuCard title="แบบฟอร์มส่งต่อ (สปสช.)" icon="fa-hospital-user" color="#0284c7" onClick={handleOpenReferForm} />
+                                <MenuCard title="ลิงก์ไดรฟ์อัปโหลดเคส" icon="fa-folder-open" color="#16a34a" href={DRIVE_UPLOAD_CASE_URL} />
+                                <MenuCard title="ลิงก์ไดรฟ์ใบส่งต่อ" icon="fa-file-medical" color="#eab308" href={DRIVE_REFERRAL_UPLOAD_URL} />
+                            </div>
+
+                            {/* CASE LIST TABLE */}
+                            <div className="bg-white rounded-xl shadow-sm border p-6">
+                                <h3 className="font-bold text-lg mb-4 text-gray-700"><i className="fa-solid fa-clock-history mr-2 text-blue-600"></i> ประวัติเคสล่าสุด</h3>
+                                {loading ? <LoadingSpinner /> : (
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full modern-table text-left">
+                                            <thead>
+                                                <tr>
+                                                    <th>วันที่</th>
+                                                    <th>ชื่อผู้ป่วย</th>
+                                                    <th>อาการสำคัญ</th>
+                                                    <th>ผู้รายงาน</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {cases.length === 0 ? (
+                                                    <tr><td colSpan="4" className="text-center py-6 text-gray-400">ยังไม่มีข้อมูลในระบบ</td></tr>
+                                                ) : cases.map((c) => (
+                                                    <tr key={c.id}>
+                                                        <td>{c.timestamp}</td>
+                                                        <td className="font-medium">{c.patient_name}</td>
+                                                        <td>{c.chief_complaints || '-'}</td>
+                                                        <td>{c.pharmacist_name || '-'}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {currentView === 'refer_form' && (
+                        <ReferralForm initialData={selectedCase} onCancel={() => setCurrentView('dashboard')} onSendReport={handleSendReport} />
+                    )}
+
+                    {currentView === 'print_preview' && (
+                        <ReferralPrintView caseData={selectedCase} onEdit={() => setCurrentView('refer_form')} onFinalize={handleFinalizePrint} />
+                    )}
+
                     <Footer />
                 </div>
             );
-        }
+        };
 
+        // RENDER TO ROOT
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
