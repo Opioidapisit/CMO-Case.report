@@ -282,11 +282,20 @@
                     const authInstance = getAuthCompat();
                     setDb(firestore); setAuth(authInstance);
                     const unsubscribe = authInstance.onAuthStateChanged(async (user) => {
-                        if (!user) await authInstance.signInAnonymously();
-                        setUserId(authInstance.currentUser.uid);
-                        setIsAuthReady(true);
-                    });
-                    return () => unsubscribe();
+                try {
+                    if (!user) {
+                        const result = await authInstance.signInAnonymously();
+                        setUserId(result.user.uid);
+                    } else {
+                        setUserId(user.uid);
+                    }
+                } catch (err) {
+                    console.error("Auth Error:", err);
+                } finally {
+                    setIsAuthReady(true);
+                }
+            });                    
+            return () => unsubscribe();
                 } catch (e) { setIsAuthReady(true); }
             }, []);
             return { db, auth, userId, isAuthReady };
