@@ -356,9 +356,9 @@
                         <td colSpan="2" className="border border-gray-900 p-2 align-top"><p><strong>อาการสำคัญ:</strong> {caseData.chief_complaints}</p><p><strong>ประวัติการเจ็บป่วย:</strong> {caseData.history_of_illness}</p><p><strong>โรคประจำตัว:</strong> {caseData.chronic_disease}</p><p><strong>ประวัติแพ้ยา:</strong> {caseData.drug_allergy}</p><p><strong>ข้อมูลเพิ่มเติม:</strong> {caseData.additional_info}</p><p><strong>ปัญหาที่พบ:</strong> {caseData.problem_found}</p></td></tr>
                         <tr><td colSpan="4" className="border border-gray-900 p-2 font-bold" style={{ backgroundColor: '#f0f0f0', textAlign: 'center' }}>การดำเนินการเบื้องต้นของเภสัชกร</td></tr>
                         <tr><td colSpan="4" className="border border-gray-900 p-2 align-top">
-                            <p>[{treatmentBoxChecked('give_treatment')}] ให้การรักษาเบื้องต้น {caseData.initial_treatment.includes('give_treatment') && caseData.treatment_note && `(**ระบุ: ${caseData.treatment_note}**)`}</p>
-                            <p>[{treatmentBoxChecked('give_advice')}] ให้คำแนะนำการใช้ยา/การดูแลตัวเอง {caseData.initial_treatment.includes('give_advice') && caseData.advice_note && `(**ระบุ: ${caseData.advice_note}**)`}</p>
-                            <p>[{treatmentBoxChecked('other_action')}] อื่นๆ {caseData.initial_treatment.includes('other_action') && caseData.other_note && `(**ระบุ: ${caseData.other_note}**)`}</p>
+                            <p>[{treatmentBoxChecked('give_treatment')}] ให้การรักษาเบื้องต้น {caseData.initial_treatment.includes('give_treatment') && caseData.treatment_note && `(*ระบุ: ${caseData.treatment_note}*)`}</p>
+                            <p>[{treatmentBoxChecked('give_advice')}] ให้คำแนะนำการใช้ยา/การดูแลตัวเอง {caseData.initial_treatment.includes('give_advice') && caseData.advice_note && `(*ระบุ: ${caseData.advice_note}*)`}</p>
+                            <p>[{treatmentBoxChecked('other_action')}] อื่นๆ {caseData.initial_treatment.includes('other_action') && caseData.other_note && `(*ระบุ: ${caseData.other_note}*)`}</p>
                         </td></tr>
                         <tr><td colSpan="4" className="p-4 pt-8 border-gray-900 text-right" style={{ borderTop: 'none', borderBottom: 'none' }}><div style={{ textAlign: 'center', marginTop: '30px' }}><p>(ลงชื่อ) .....................................................</p><p>เภสัชกรผู้ส่งต่อ: {caseData.pharmacist_name}</p><p>เลขประกอบวิชาชีพ: {caseData.license_no} | วันที่: {getCurrentDate()}</p></div><div style={{ textAlign: 'left', marginTop: '15px', borderTop: '1px solid #ccc', paddingTop: '5px' }}><p><strong>ส่งต่อจากร้านยา:</strong> {caseData.pharmacy_name} | <strong>โทรศัพท์:</strong> {caseData.pharmacy_tel}</p><p><strong>ที่อยู่ร้านยา:</strong> {caseData.pharmacy_address}</p></div></td></tr>
                         <tr><td colSpan="4" className="p-2 border border-gray-900 header-row" style={{fontSize: '10pt', backgroundColor: '#f0f0f0', textAlign: 'center'}}><p>ขอความร่วมมือหน่วยงานรับผู้ป่วยเพื่อรักษาและตอบกลับต้นทางตามข้อมูลข้างต้น</p></td></tr>
@@ -540,7 +540,7 @@
                     <div className="form-section relative overflow-hidden">
                         <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-600 via-blue-400 to-blue-600"></div>
                         <h1 className="text-2xl font-bold text-gray-800 mb-6 border-b pb-4 mt-2">
-                             {isEditMode ? `แก้ไขเคส: ${formData.patient_name}` : 'บันทึกเคสใหม่'}
+                             {isEditMode ? แก้ไขเคส: ${formData.patient_name} : 'บันทึกเคสใหม่'}
                         </h1>
                         <form>
                             <h2 className="text-lg font-bold text-blue-700 mb-3">1. ข้อมูลการรายงาน</h2>
@@ -706,7 +706,7 @@
                         setCurrentCase(cases.find(c => c.id === docId) || { ...caseData, id: docId, timestamp: new Date().toLocaleDateString('th-TH') });
                         setShowPrintView(true);
                     } else {
-                        alert(`อัปเดตเคส ${caseData.patient_name} สำเร็จ`);
+                        alert(อัปเดตเคส ${caseData.patient_name} สำเร็จ);
                         setView('dashboard'); setCurrentCase(null);
                     }
                 } catch (e) { console.error(e); alert('เกิดข้อผิดพลาดในการบันทึก'); } finally { setIsSaving(false); }
@@ -715,7 +715,7 @@
             const triggerAppsScriptRecord = async (caseData, isEdit) => {
                 if (APPS_SCRIPT_RECORD_URL.includes('YOUR_DEPLOYED')) return;
                 try { await fetch(APPS_SCRIPT_RECORD_URL, { method: 'POST', mode: 'cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...caseData, isEdit }) }); } 
-                catch (e) { alert(`ข้อมูลถูกบันทึกใน Firebase แล้ว ยืนยันการบันทึกเป็น pdf ของท่าน`); }
+                catch (e) { alert(ข้อมูลถูกบันทึกใน Firebase แล้ว ยืนยันการบันทึกเป็น pdf ของท่าน); }
             };
 
             const handleReportSubmission = async (reportData, type) => {
@@ -724,7 +724,7 @@
                 setView('referral_print'); 
             };
             
-            const handleReferralFinalize = () => { window.print(); alert(`เสร็จสิ้นการส่งต่อ! อย่าลืมอัปโหลดเคสต่อไป`); setView('dashboard'); setCurrentCase(null); };
+            const handleReferralFinalize = () => { window.print(); alert(เสร็จสิ้นการส่งต่อ! อย่าลืมอัปโหลดเคสต่อไป); setView('dashboard'); setCurrentCase(null); };
             
             const handleDelete = async (caseId) => {
                 if (!db || !userId) return;
