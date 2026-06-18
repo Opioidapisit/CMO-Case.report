@@ -764,18 +764,7 @@
         }
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
-        try {
-    root.render(<App />);
-} catch(err) {
-    console.error(err);
-
-    document.getElementById('root').innerHTML = `
-        <div style="padding:20px;font-family:sans-serif">
-            <h2 style="color:red">เกิดข้อผิดพลาด</h2>
-            <pre>${err.message}</pre>
-        </div>
-    `;
-}
+        root.render(<App />);
     </script>
 </body>
 </html>
