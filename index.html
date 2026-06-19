@@ -1,961 +1,422 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบบันทึกการรักษาและส่งต่อผู้ป่วย คลินิคยา มอ ออ จังหวัดตรัง</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nuvitra Products</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet" />
     
-    <!-- Libraries -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-    
-
     <style>
-        /* --- CORE STYLES --- */
         :root {
-            --primary: #0056b3;       /* น้ำเงินเข้มขึ้น เพื่อความชัดเจน */
-            --primary-light: #eff6ff;
-            --secondary: #0ea5e9;     /* ฟ้าสดใส */
-            --text-main: #334155;
-            --text-light: #64748b;
-            --bg-body: #f1f5f9;
-            --card-radius: 16px;
+            --primary-color: #1a365d;
+            --accent-color: #2563eb;
+            --text-main: #1f2937;
+            --text-muted: #64748b;
+            --bg-gradient: linear-gradient(135deg, #f3f4f6 0%, #e0e7ff 100%);
+            --btn-blue: #0056b3; 
+            
+            /* ปรับสีปุ่มให้เข้มขึ้น (Saturated Pastel) */
+            --btn-promote-color: #3b82f6; /* ฟ้าสดใสขึ้น (Blue 500) */
+            --btn-video-color: #ef4444;   /* แดงสดใสขึ้น (Red 500) */
+            --btn-disabled: #cbd5e1;      /* เทา */
         }
 
         body {
             font-family: 'Kanit', sans-serif;
-            background-color: var(--bg-body);
-            color: var(--text-main);
             margin: 0;
-            padding-bottom: 60px;
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden; 
         }
 
-        /* --- HEADER --- */
-        .header-section {
-            background: linear-gradient(135deg, #0f172a 0%, #1e40af 100%); /* สีน้ำเงินเข้ม-ดำ ดูทางการ */
-            padding: 1.5rem 1rem 3rem 1rem;
-            border-bottom-left-radius: 24px;
-            border-bottom-right-radius: 24px;
-            color: white;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            position: relative;
-            z-index: 10;
+        /* --- Header (คงเดิม) --- */
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 0.8rem 1.5rem;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border-bottom: 1px solid rgba(255,255,255,0.5);
         }
 
-        .header-content {
+        .header-container {
             max-width: 1200px;
             margin: 0 auto;
             display: flex;
             align-items: center;
-            gap: 15px;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap; 
         }
 
-        .shop-logo {
-            width: 60px;
-            height: 60px;
-            object-fit: contain;
-            background: white;
-            border-radius: 50%;
-            padding: 4px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        }
+        .header-left { display: flex; align-items: center; gap: 1rem; }
+        .logo { width: 50px; height: auto; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)); }
+        .header-text-group { text-align: left; }
+        .header-title { font-size: 1.4rem; font-weight: 600; color: var(--primary-color); line-height: 1.1; }
+        .header-subtitle { font-size: 0.8rem; color: var(--text-muted); font-weight: 300; }
 
-        /* --- MENU CARDS (Flashcards) --- */
-        .dashboard-container {
-            max-width: 1200px;
-            margin: -25px auto 0; /* ดึงขึ้นไปทับ Header เล็กน้อย */
-            padding: 0 1rem;
-            position: relative;
-            z-index: 20;
+        .header-right { display: flex; flex-direction: row; gap: 0.5rem; align-items: center; } /* ลด gap ลงเล็กน้อย */
+        
+        .header-link-btn {
+            display: inline-flex; 
+            align-items: center; 
+            gap: 0.4rem; 
+            /* ปรับขนาดปุ่มให้เล็กเพื่อให้เรียง 4 ปุ่มได้สวยงาม */
+            padding: 0.4rem 0.6rem; 
+            border-radius: 6px; 
+            text-decoration: none; 
+            font-size: 0.7rem; /* ลดขนาดฟอนต์ */
+            font-weight: 500;
+            color: white; 
+            transition: transform 0.2s, box-shadow 0.2s; 
+            white-space: nowrap;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+            background-color: var(--btn-blue);
         }
+        .header-link-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.15); background-color: #004494; }
 
-        .menu-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 12px;
-            margin-bottom: 2rem;
-        }
+        /* --- Layout --- */
+        .container { max-width: 1200px; margin: 2rem auto; padding: 0 1.5rem; padding-bottom: 4rem; }
+        
+        /* Grid ขนาดเดิม */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 2rem; }
 
-        .menu-card {
-            background: white;
-            border-radius: var(--card-radius);
-            padding: 1.25rem 1rem;
+        /* --- Product Card (ขนาดกระชับ) --- */
+        .product-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: 1rem; 
             text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 1px solid rgba(255,255,255,0.8);
+            position: relative;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            background: #fff;
+            z-index: 2;
+        }
+
+        .product-img-wrapper {
+            width: 100px; 
+            height: 100px;
+            margin: 0 auto 0.5rem; 
+            border-radius: 50%;
+            background-color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border: 3px solid white;
+            cursor: pointer; 
+        }
+
+        .product-card img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+        
+        .product-name {
+            font-size: 1.1rem; font-weight: 500; color: #334155; 
+            margin-bottom: 0.5rem;
+            min-height: 2.2rem; 
+            display: flex; align-items: center; justify-content: center; line-height: 1.2;
+        }
+
+        /* --- Action Buttons (ปรับสีเข้มขึ้น) --- */
+        .card-actions {
+            display: flex;
+            flex-direction: row;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            justify-content: space-between;
+        }
+
+        .action-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.35rem 0.6rem; 
+            border-radius: 6px; 
             text-decoration: none;
-            color: var(--text-main);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-            border: 1px solid #e2e8f0;
-            transition: all 0.2s ease-in-out;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            cursor: pointer;
-        }
-
-        .menu-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            border-color: var(--secondary);
-        }
-
-        .icon-box {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            margin-bottom: 10px;
-            color: white; /* ไอคอนสีขาว บนพื้นหลังสี */
-        }
-
-        .menu-title {
-            font-size: 0.95rem;
-            font-weight: 500;
-            line-height: 1.3;
-        }
-
-        /* --- BUTTONS --- */
-        .btn-action {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 10px 20px;
-            border-radius: 10px;
-            font-weight: 500;
+            font-family: 'Kanit', sans-serif; 
+            font-size: 0.75rem; 
+            font-weight: 500; 
+            color: white;
             transition: all 0.2s;
             border: none;
             cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .btn-action:hover { transform: translateY(-1px); box-shadow: 0 4px 6px rgba(0,0,0,0.15); }
-        .btn-action:disabled { opacity: 0.6; cursor: not-allowed; }
-
-        .btn-blue { background-color: #2563eb; color: white; }
-        .btn-blue:hover { background-color: #1d4ed8; }
-
-        .btn-green { background-color: #16a34a; color: white; }
-        .btn-green:hover { background-color: #15803d; }
-
-        .btn-red { background-color: #dc2626; color: white; }
-        .btn-red:hover { background-color: #b91c1c; }
-
-        .btn-gray { background-color: #64748b; color: white; }
-        .btn-gray:hover { background-color: #475569; }
-
-        /* --- FORM --- */
-        .form-section {
-            background: white;
-            border-radius: var(--card-radius);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            padding: 2rem;
-            margin-bottom: 2rem;
-            border: 1px solid #f1f5f9;
+            box-shadow: none; 
+            flex: 1; 
+            white-space: nowrap;
         }
 
-        .input-field, .select-field, .textarea-field {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            border-radius: 8px;
-            border: 1px solid #cbd5e1;
-            background-color: #f8fafc;
-            font-family: 'Kanit', sans-serif;
-            transition: border-color 0.2s;
+        .btn-promote {
+            background-color: var(--btn-promote-color); 
         }
-        .input-field:focus, .select-field:focus, .textarea-field:focus {
-            outline: none;
-            border-color: var(--primary);
-            background-color: white;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        .btn-promote:hover {
+            background-color: #2563eb; 
         }
 
-        /* --- TABLE --- */
-        .modern-table thead th {
-            background-color: #f8fafc;
-            color: #64748b;
-            font-weight: 600;
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            padding: 1rem;
-            text-align: left;
-            border-bottom: 1px solid #e2e8f0;
+        .btn-video {
+            background-color: var(--btn-video-color); 
         }
-        .modern-table tbody tr {
-            border-bottom: 1px solid #f1f5f9;
+        .btn-video:hover {
+            background-color: #dc2626; 
         }
-        .modern-table tbody tr:last-child { border-bottom: none; }
-        .modern-table tbody tr:hover { background-color: #f8fafc; }
-        .modern-table td { padding: 1rem; vertical-align: middle; }
 
-        /* --- PRINT --- */
-        @media print {
-            .header-section, .no-print, footer, .dashboard-container { display: none !important; }
-            body { background-color: white !important; padding: 0; }
-            #view-area { display: none !important; }
-            #print-area, #print-area * { visibility: visible; }
-            #print-area { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0.5cm; }
-            .report-table td, .spsr-table td { border-color: #000 !important; page-break-inside: avoid; }
-            .report-table .header-row { background-color: #f0f0f0 !important; -webkit-print-color-adjust: exact; }
+        .btn-video.disabled {
+            background-color: var(--btn-disabled);
+            color: #94a3b8; 
+            cursor: default;
         }
+
+        /* --- Mobile Optimization --- */
+        @media screen and (max-width: 850px) {
+            .header-container { flex-direction: column; gap: 1rem; align-items: center; }
+            .header-left { justify-content: center; }
+            .header-text-group { text-align: center; }
+            /* บนมือถือให้ปุ่มเรียงแนวนอนแบบ flex-wrap */
+            .header-right { 
+                flex-direction: row; 
+                flex-wrap: wrap; 
+                justify-content: center; 
+                width: 100%; 
+                gap: 0.5rem;
+            }
+            .header-link-btn { font-size: 0.75rem; padding: 0.4rem 0.8rem; }
+        }
+
+        @media screen and (max-width: 600px) {
+            .container { margin: 1rem auto; padding: 0 0.5rem; }
+            .grid { grid-template-columns: repeat(3, 1fr); gap: 0.8rem; }
+            
+            .product-card { padding: 0.8rem 0.4rem; border-radius: 12px; min-height: auto; }
+            .product-img-wrapper { width: 65px; height: 65px; margin: 0 auto 0.4rem; border-width: 2px; }
+            .product-name { font-size: 0.75rem; margin-bottom: 0.3rem; min-height: 2rem; align-items: start; justify-content: center; }
+            
+            .card-actions { flex-direction: column; gap: 0.3rem; margin-top: 0; }
+            .action-btn { font-size: 0.65rem; padding: 0.2rem; border-radius: 4px; width: 100%; }
+        }
+
+        @media screen and (max-width: 380px) {
+            .grid { gap: 0.5rem; }
+            .product-img-wrapper { width: 55px; height: 55px; }
+            .product-name { font-size: 0.7rem; }
+        }
+
+        /* --- Popup --- */
+        .popup {
+            display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%;
+            background-color: rgba(15, 23, 42, 0.8); backdrop-filter: blur(5px);
+            align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s;
+        }
+        .popup.show { display: flex; opacity: 1; }
+        .popup-content {
+            background: white; padding: 0; border-radius: 20px; width: 90%; max-width: 600px;
+            overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        .popup-header { padding: 1rem 1.5rem; background: #f8fafc; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+        .popup-header h2 { margin: 0; font-size: 1.2rem; color: var(--primary-color); }
+        .close-btn { background: none; border: none; font-size: 1.8rem; color: #94a3b8; cursor: pointer; }
+        .popup-body { padding: 1.5rem; text-align: center; }
+        .popup-gallery {
+            position: relative; min-height: 300px; display: flex; align-items: center; justify-content: center;
+            background: #f1f5f9; border-radius: 12px; margin-bottom: 1rem;
+        }
+        .popup-gallery img { max-width: 100%; max-height: 300px; object-fit: contain; }
+        .nav-btn {
+            background: white; border: none; width: 40px; height: 40px; border-radius: 50%;
+            position: absolute; top: 50%; transform: translateY(-50%); box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+        }
+        .prev-btn { left: 10px; } .next-btn { right: 10px; }
     </style>
 </head>
 <body>
-    <div id="root"><div style="padding:32px;text-align:center;font-family:Kanit,sans-serif;color:#2563eb;font-weight:600;">กำลังโหลดระบบ...</div></div>
 
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script> 
-    <script type="text/javascript">
-const { useState, useEffect, useMemo } = React;
-// --- FIREBASE CONFIG & LOGIC (KEEP ORIGINAL) ---
-const USER_FIREBASE_CONFIG = {
-    apiKey: "AIzaSyB1ixH1epK4fnaLLbO10wsH_LTDDhraoyg",
-    authDomain: "casereportcmo.firebaseapp.com",
-    projectId: "casereportcmo",
-    storageBucket: "casereportcmo.firebasestorage.app",
-    messagingSenderId: "588025239095",
-    appId: "1:588025239095:web:9d98aaf31e903546da91b2"
-};
-const FIREBASE_PATH_APP_ID = 'trang-case-system';
-const APPS_SCRIPT_RECORD_URL = 'https://script.google.com/macros/s/AKfycbxvb717wxqHcUZVOi8xMSs-ICDa7DydwtDsfwHLMoF-F1V_eeCyI89ZD119uzkP3rifeg/exec';
-const DRIVE_UPLOAD_CASE_URL = 'https://drive.google.com/drive/folders/16mKp3MNJL-9JksYeV8DCZVd6kcM8yCkJ?usp=sharing';
-const DRIVE_REFERRAL_UPLOAD_URL = 'https://drive.google.com/drive/folders/11FPdw0jVNlgwPZKYdSVVJM0EyE2gvCyG?usp=sharing';
-const LOGO_BASE_URL = './head refer form.jpg';
-const SHOP_LOGO_URL = 'ตรา.png'; // New Shop Logo
-const branchMap = { '1': 'สาขา 1 นาเมืองเพชร', '2': 'สาขา 2 ที่วัง', '3': 'สาขา 3 คลองเต็ง', '4': 'สาขา 4 นาโยง', '5': 'สาขา 5 ท่ากลาง', '6': 'สาขา 6 รัษฎา', '7': 'สาขา 7 รักษ์จันทน์', '8': 'สาขา 8 หน้า รร.สภาราชินี', '9': 'สาขา 9 หน้า บิ๊กซี' };
-const fullBranchNameMap = { '1': 'คลินิคยา มอ ออ', '2': 'คลินิคยา มอ ออ 2', '3': 'คลินิคยา มอ ออ 3', '4': 'คลินิคยา มอ ออ 4', '5': 'คลินิคยา มอ ออ ท่ากลาง', '6': 'คลินิคยา มอ ออ สาขารัษฎา', '7': 'คลินิคยา มอ ออ สาขารักษ์จันทน์', '8': 'คลินิคยา มอ ออ สาขาหน้าโรงเรียนสภาราชินี', '9': 'คลินิคยา มอ ออ สาขาหน้าบิ๊กซี' };
-const chiefComplaintsOptions = [
-    { value: '(01) Dizziness', label: 'Dizziness (เวียนศีรษะ)' }, { value: '(02) Headache', label: 'Headache (ปวดหัว)' },
-    { value: '(03) Pain in joint/muscle pain', label: 'ปวดข้อ/กล้ามเนื้อ' }, { value: '(04) Toothache', label: 'Toothache (ปวดฟัน)' },
-    { value: '(05) Abdominal pain (Menstrual)', label: 'ปวดประจำเดือน' }, { value: '(06) Stomachache', label: 'Stomachache (ปวดท้อง)' },
-    { value: '(07) Diarrhea', label: 'Diarrhea (ท้องเสีย)' }, { value: '(08) Constipation/Hemorrhoids', label: 'ท้องผูก/ริดสีดวงทวาร' },
-    { value: '(09) Dysuria', label: 'Dysuria (ปัสสาวะแสบขัด)' }, { value: '(10) Vaginal discharge', label: 'Vaginal discharge (ตกขาว)' },
-    { value: '(11) Wound', label: 'Wound (แผล)' }, { value: '(12) Skin rash', label: 'Skin rash (ผื่นผิวหนัง)' },
-    { value: '(13) Eye disorder', label: 'Eye disorder (อาการทางตา)' }, { value: '(14) Ear disorder', label: 'Ear disorder (อาการทางหู)' },
-    { value: '(15) Fever/cough/sore throat', label: 'ไข้ ไอ เจ็บคอ' }, { value: '(16) Covid-19', label: 'Covid-19 (ติดเชื้อโควิด)' },
-    { value: '(17) Rhinorrhea/ nasal congestion', label: 'น้ำมูก คัดจมูก' }, { value: '(18) Ulcer in mouth', label: 'Ulcer in mouth (แผลในปาก)' },
-    { value: '(19) Herpes simplex', label: 'Herpes simplex (ตุ่มน้ำใสที่ปาก)' }, { value: '(20) Burn', label: 'Burn (แผลน้ำร้อนลวก)' },
-    { value: '(21) Itchy skin/head', label: 'อาการคันผิวหนัง/ศีรษะ' }, { value: '(22) Helminthiasis', label: 'Helminthiasis (พยาธิ)' },
-    { value: '(23) Scabies', label: 'Scabies (หิด เหา)' }, { value: '(24) Cellulitis', label: 'Cellulitis (ฝี หนองที่ผิวหนัง)' },
-    { value: '(25) Beriberi', label: 'Beriberi (อาการชา/เหน็บชา)' }, { value: '(26) Insomnia', label: 'Insomnia (อาการนอนไม่หลับ)' },
-    { value: '(27) Motion sickness', label: 'Motion sickness (เมารถ เมาเรือ)' }, { value: '(28) Anorexia', label: 'Anorexia (เบื่ออาหาร)' },
-    { value: '(29) Nausea and vomitting', label: 'คลื่นไส้ อาเจียน' }, { value: '(30) Drug/food allergy/insect bite', label: 'อาการแพ้ยา/อาหาร/แมลงกัดต่อย' },
-    { value: '(31) Tobacco dependence', label: 'เจ็บป่วยจากการสูบบุหรี่' }, { value: '(32) Gingivitis', label: 'เหงือกอักเสบ/มีกลิ่นปาก' }, { value: '(33) Others', label: 'อาการเจ็บป่วยอื่นๆ' }
-];
-// --- UTILS ---
-const getFirestoreCompat = () => firebase.firestore();
-const getAuthCompat = () => firebase.auth();
-const getCollectionCompat = (db, ...path) => db.collection(path.join('/'));
-const getDocCompat = (db, ...path) => db.doc(path.join('/'));
-const serverTimestampCompat = firebase.firestore.FieldValue.serverTimestamp;
-const LoadingSpinner = () => (React.createElement("div", { className: "flex flex-col justify-center items-center p-12" },
-    React.createElement("div", { className: "animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent mb-4" }),
-    React.createElement("p", { className: "text-blue-700 font-semibold" }, "\u0E01\u0E33\u0E25\u0E31\u0E07\u0E14\u0E33\u0E40\u0E19\u0E34\u0E19\u0E01\u0E32\u0E23...")));
-// --- HOOKS ---
-const useFirebase = () => {
-    const [db, setDb] = useState(null);
-    const [auth, setAuth] = useState(null);
-    const [userId, setUserId] = useState(null);
-    const [isAuthReady, setIsAuthReady] = useState(false);
-    useEffect(() => {
-        try {
-            if (!firebase.apps.length)
-                firebase.initializeApp(USER_FIREBASE_CONFIG);
-            const firestore = getFirestoreCompat();
-            const authInstance = getAuthCompat();
-            setDb(firestore);
-            setAuth(authInstance);
-            const unsubscribe = authInstance.onAuthStateChanged(async (user) => {
-                try {
-                    if (user) {
-                        setUserId(user.uid);
-                    }
-                    else {
-                        const cred = await authInstance.signInAnonymously();
-                        setUserId(cred.user.uid);
-                    }
-                }
-                catch (authError) {
-                    console.error('Firebase Auth error:', authError);
-                }
-                finally {
-                    setIsAuthReady(true);
-                }
-            });
-            return () => unsubscribe();
+    <header>
+        <div class="header-container">
+            <!-- ส่วนซ้าย: โลโก้และชื่อ -->
+            <div class="header-left">
+                <img src="mascot.png" alt="Mascot" class="logo" onerror="this.style.display='none'">
+                <div class="header-text-group">
+                    <div class="header-title">Nuvitra Dietary Supplement</div>
+                    <div class="header-subtitle">By คลินิคยา มอ ออ จังหวัดตรัง</div>
+                </div>
+            </div>
+
+            <!-- ส่วนขวา: ปุ่มลิงก์ต่างๆ -->
+            <div class="header-right">
+                <a href="https://gemini.google.com/gem/1dlryVOcmzvrLU8KbyTs9K-9gjlI-12xT?usp=sharing" target="_blank" class="header-link-btn" style="background-color: #8b5cf6;">
+                    🤖 AI Morvitra 
+                    
+                <a href="https://drive.google.com/file/d/1mL8MP6CNqai1SytEpDEKNmGnkCN29UKd/view?usp=drivesdk" target="_blank" class="header-link-btn">
+                    1️⃣ One page
+                </a>
+                
+                <a href="https://drive.google.com/drive/folders/1bXIeHug4Z-r1e2v9RpWTw8A9Xzpw8iJ8?usp=drive_link" target="_blank" class="header-link-btn">
+                    👍 คลิปการขายแบบ 3-tier
+                </a>
+                
+                <!-- ปุ่มใหม่ วิธีทาน (ยังไม่มีลิงก์) -->
+                <a href="https://drive.google.com/file/d/1TqFKqelsrM-yzh0K07ySO7nwySvHc69v/view?usp=drivesdk" target="_blank" class="header-link-btn">
+                    💊 วิธีทาน/ข้อควรระวัง
+                </a>
+
+                <a href="https://drive.google.com/drive/folders/12F-QEUJYCql167CXoP4tPT4GM8h-rcyt?usp=drive_link" target="_blank" class="header-link-btn">
+                    📂 เอกสารทั้งหมด
+                </a>
+                <!--a href="https://script.google.com/macros/s/AKfycbzJ8ClbpSgRVzf6J0QI2GzZEO7Py6RtNLK7JhEZ1-g2hv1Im5j-qugyjZwxC9kLaQJbNw/exec" target="_blank" class="header-link-btn">
+                    🛒 ระบบสั่งซื้อ
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div id="product-grid" class="grid"></div>
+    </div>
+
+    <!-- Popup -->
+    <div id="main-popup" class="popup">
+        <div class="popup-content">
+            <div class="popup-header">
+                <h2 id="popup-title">Product</h2>
+                <button class="close-btn" onclick="closePopup()">&times;</button>
+            </div>
+            <div class="popup-body">
+                <div class="popup-gallery">
+                    <button class="nav-btn prev-btn" onclick="changeImage(-1)">&#10094;</button>
+                    <img id="popup-img" src="" alt="Product">
+                    <div id="popup-placeholder" style="display:none; color:#94a3b8;">Loading...</div>
+                    <button class="nav-btn next-btn" onclick="changeImage(1)">&#10095;</button>
+                </div>
+                <div id="image-counter" style="margin-bottom:1rem; font-size:0.8rem; color:#64748b;"></div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    const imageSuffixes = ['in', 'gf', 'pm', 'one']; 
+
+    const products = [
+        { code: 'AC', name: 'Acerola cherry plus', color: '#fff7ed', video: 'https://drive.google.com/file/d/1qa1wa0GKYQUNdNrqsmJSZgADjTBu1rPg/view?usp=drive_link' },
+        { code: 'CA', name: 'Calcium L-threonate', color: '#ecfeff', video: 'https://drive.google.com/file/d/1-bVaP5dzs6dysH9yS5TK52mhT7facl3a/view?usp=drive_link' },
+        { code: 'CL', name: 'Collagen plus C', color: '#fdf2f8', video: 'https://drive.google.com/file/d/1ww5wxAeze3oMPyZOKDlcoGgB-mYW1ROu/view?usp=drive_link' },
+        { code: 'FO', name: 'Fish oil', color: '#f0fdf4', video: 'https://drive.google.com/file/d/1A_BPxdcNYlLxHaHacMvM7LxCpkQ5iFm2/view?usp=drive_link' },
+        { code: 'HR', name: 'Harigo', color: '#fafaf9', video: 'https://drive.google.com/file/d/1GD43qGQkAOLHh2iSZrYZF86GtelEWXju/view?usp=drive_link' },
+        { code: 'GT', name: 'L-Gluta', color: '#fce7f3', video: 'https://drive.google.com/file/d/13UVcj67mn3v-ymIAQBO2iDOqE8bqr0rJ/view?usp=drive_link' },
+        { code: 'LT', name: 'Lutein & Zeaxanthin', color: '#fefce8', video: 'https://drive.google.com/file/d/1Qk9FePI0EAwtKTRYpsKyGKsKsF3fcFk2/view?usp=drive_link' },
+        { code: 'MA', name: 'Magnesium plus', color: '#eff6ff', video: 'https://drive.google.com/file/d/1By6AQy_VpeuqqcEAOcLjkbIwgHkPntgf/view?usp=drive_link' },
+        { code: 'MT', name: 'Multivitamin plus', color: '#f3e8ff', video: 'https://drive.google.com/file/d/18Q0cskerFQsqkcRgxcpkG0TfAHsalSLO/view?usp=drive_link'},
+        { code: 'ZN', name: 'Zinc plus C', color: '#f3f4f6', video: 'https://drive.google.com/file/d/1igzJQs-IWpB48d-gsMrGC14tttTkMXxP/view?usp=drive_link' },
+        { code: 'Dp', name: 'Date palm plus', color: '#fae8ff', video: 'https://drive.google.com/file/d/1nxRTIS6LXUFjHE24iwaHgKCj_bAWPhsK/view?usp=drive_link' },
+        { code: 'AS', name: 'Astaxanthin plus', color: '#fee2e2', video: 'https://drive.google.com/file/d/1EKKugmjWvIj447gnK0T_8G27867jUQ9E/view?usp=drive_link' },
+        { code: 'COC', name: 'Colla cal plus', color: '#e0f2fe', video: 'https://drive.google.com/file/d/1LYE4ZKAYeItdTXGgsIueq9CcP-OTz9qK/view?usp=drive_link' },
+        { code: 'GOT', name: 'Gotu kola plus', color: '#E8F5E9', video:'https://drive.google.com/file/d/1qeWKliNVkyrFWZrO_raUQDyp6K_BqtHP/view?usp=drive_link' }, 
+        { code: 'VC', name: 'Vitamin C 1000 mg plus', color: '#ffa000' },
+        { code: 'VB', name: 'Vitamin B plus', color: '#fbc02d' }
+    ];
+
+    const gridContainer = document.getElementById('product-grid');
+
+    products.forEach(product => {
+        const coverImage = `${product.code}.jpg`; 
+        const card = document.createElement('div');
+        card.className = 'product-card';
+        card.style.background = `linear-gradient(to bottom right, #ffffff 60%, ${product.color} 100%)`;
+
+        // สร้าง HTML สำหรับปุ่มวิดีโอ
+        let videoBtnHtml = '';
+        if (product.video) {
+            videoBtnHtml = `<a href="${product.video}" target="_blank" class="action-btn btn-video">ดูวิดีโอ</a>`;
+        } else {
+            videoBtnHtml = `<button class="action-btn btn-video disabled">ไม่มีวิดีโอ</button>`;
         }
-        catch (e) {
-            setIsAuthReady(true);
-        }
-    }, []);
-    return { db, auth, userId, isAuthReady };
-};
-const useCaseData = (db, isAuthReady) => {
-    const [cases, setCases] = useState([]);
-    const [loading, setLoading] = useState(true);
-    useEffect(() => {
-        if (!db || !isAuthReady)
-            return;
-        const unsubscribe = getCollectionCompat(db, 'artifacts', FIREBASE_PATH_APP_ID, 'public/data/cases')
-            .orderBy('timestamp', 'desc')
-            .onSnapshot((snapshot) => {
-            setCases(snapshot.docs.map(doc => { var _a; return ({ id: doc.id, ...doc.data(), timestamp: ((_a = doc.data().timestamp) === null || _a === void 0 ? void 0 : _a.toDate) ? doc.data().timestamp.toDate().toLocaleDateString('th-TH') : 'N/A' }); }));
-            setLoading(false);
-        }, () => setLoading(false));
-        return () => unsubscribe();
-    }, [db, isAuthReady]);
-    return { cases, loading };
-};
-// --- COMPONENTS ---
-// 1. Footer
-const Footer = () => {
-    const [currentTime, setCurrentTime] = useState(new Date());
-    useEffect(() => { const timer = setInterval(() => setCurrentTime(new Date()), 1000); return () => clearInterval(timer); }, []);
-    return (React.createElement("footer", { className: "mt-12 py-6 border-t no-print bg-white text-center text-sm text-gray-500 shadow-inner" },
-        React.createElement("div", { className: "max-w-7xl mx-auto px-4" },
-            React.createElement("p", { className: "font-medium" }, "CMO-Case Management System (Powered by React & Firebase)"),
-            React.createElement("p", { className: "text-xs mt-1 text-gray-400" },
-                "Develop by Opioid.Apisit | ",
-                currentTime.toLocaleString('th-TH')))));
-};
-// 2. Menu Card (Clean Style - No Emoji, Colored Box)
-const MenuCard = ({ title, icon, color, onClick, href }) => {
-    const content = (React.createElement("div", { className: "menu-card group" },
-        React.createElement("div", { className: "icon-box", style: { backgroundColor: color } },
-            React.createElement("i", { className: `fa-solid ${icon}` })),
-        React.createElement("span", { className: "menu-title group-hover:text-blue-600 transition-colors" }, title)));
-    return href ? React.createElement("a", { href: href, target: "_blank", rel: "noopener noreferrer", className: "block h-full" }, content) : React.createElement("div", { onClick: onClick, className: "h-full block" }, content);
-};
-// 3. Referral Report Body (Shared for Print)
-const renderReportBody = (caseData, getCurrentDate, treatmentBoxChecked, elementId) => (React.createElement("div", { id: elementId, className: "p-8 font-kanit text-gray-900 bg-white", style: { maxWidth: '210mm', margin: '0 auto', fontSize: '10pt', border: 'none' } },
-    React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' } },
-        React.createElement("img", { src: LOGO_BASE_URL, alt: "Header Logos", style: { height: 'auto', maxHeight: '40px', display: 'block' }, onError: (e) => { e.target.style.display = 'none'; } }),
-        React.createElement("div", { style: { fontSize: '10pt' } },
-            React.createElement("strong", null, "\u0E40\u0E25\u0E02\u0E1B\u0E23\u0E30\u0E08\u0E33\u0E15\u0E31\u0E27\u0E1B\u0E23\u0E30\u0E0A\u0E32\u0E0A\u0E19:"),
-            " ",
-            caseData.cid || '...........................................')),
-    React.createElement("h2", { className: "text-lg font-bold text-center mb-2", style: { fontSize: '14pt', margin: '10px 0 15px 0', borderBottom: '1px solid #000', paddingBottom: '5px' } }, "\u0E41\u0E1A\u0E1A\u0E1F\u0E2D\u0E23\u0E4C\u0E21\u0E01\u0E32\u0E23\u0E1B\u0E23\u0E30\u0E40\u0E21\u0E34\u0E19\u0E41\u0E25\u0E30\u0E2A\u0E48\u0E07\u0E15\u0E48\u0E2D\u0E1C\u0E39\u0E49\u0E1B\u0E48\u0E27\u0E22 (Pharmacist Referral Form: PhRF)"),
-    React.createElement("table", { className: "w-full spsr-table border-collapse border border-gray-900 text-sm", style: { tableLayout: 'fixed' } },
-        React.createElement("tbody", null,
-            React.createElement("tr", null,
-                React.createElement("td", { colSpan: "4", className: "border border-gray-900 p-2" },
-                    React.createElement("strong", null, "\u0E0A\u0E37\u0E48\u0E2D\u0E1C\u0E39\u0E49\u0E1B\u0E48\u0E27\u0E22:"),
-                    " ",
-                    caseData.patient_name,
-                    " | ",
-                    React.createElement("strong", null, "\u0E40\u0E1E\u0E28:"),
-                    " ",
-                    caseData.gender,
-                    " | ",
-                    React.createElement("strong", null, "\u0E2D\u0E32\u0E22\u0E38:"),
-                    " ",
-                    caseData.age,
-                    " \u0E1B\u0E35 | ",
-                    React.createElement("strong", null, "\u0E42\u0E17\u0E23\u0E28\u0E31\u0E1E\u0E17\u0E4C:"),
-                    " ",
-                    caseData.tel)),
-            React.createElement("tr", null,
-                React.createElement("td", { colSpan: "4", className: "border border-gray-900 p-2" },
-                    React.createElement("p", null,
-                        React.createElement("strong", null, "\u0E17\u0E35\u0E48\u0E2D\u0E22\u0E39\u0E48:"),
-                        " ",
-                        caseData.address),
-                    React.createElement("p", null,
-                        React.createElement("strong", null, "\u0E2A\u0E34\u0E17\u0E18\u0E34\u0E01\u0E32\u0E23\u0E23\u0E31\u0E01\u0E29\u0E32\u0E1E\u0E22\u0E32\u0E1A\u0E32\u0E25:"),
-                        " ",
-                        caseData.health_scheme,
-                        " | ",
-                        React.createElement("strong", null, "\u0E40\u0E2B\u0E15\u0E38\u0E1C\u0E25\u0E43\u0E19\u0E01\u0E32\u0E23\u0E2A\u0E48\u0E07\u0E15\u0E48\u0E2D:"),
-                        " ",
-                        caseData.reason_for_referral))),
-            React.createElement("tr", null,
-                React.createElement("td", { colSpan: "2", className: "border border-gray-900 p-2 font-bold", style: { backgroundColor: '#f0f0f0', textAlign: 'center' } }, "\u0E01\u0E32\u0E23\u0E17\u0E1A\u0E17\u0E27\u0E19\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23\u0E22\u0E32\u0E41\u0E25\u0E30\u0E1C\u0E25\u0E34\u0E15\u0E20\u0E31\u0E13\u0E11\u0E4C\u0E2A\u0E38\u0E02\u0E20\u0E32\u0E1E"),
-                React.createElement("td", { colSpan: "2", className: "border border-gray-900 p-2 font-bold", style: { backgroundColor: '#f0f0f0', textAlign: 'center' } }, "\u0E23\u0E32\u0E22\u0E25\u0E30\u0E40\u0E2D\u0E35\u0E22\u0E14\u0E02\u0E2D\u0E07\u0E01\u0E32\u0E23\u0E2A\u0E48\u0E07\u0E15\u0E48\u0E2D")),
-            React.createElement("tr", null,
-                React.createElement("td", { colSpan: "2", className: "border border-gray-900 p-2 align-top h-40" },
-                    React.createElement("div", { style: { whiteSpace: 'pre-wrap' } }, caseData.drug_review || ' - ')),
-                React.createElement("td", { colSpan: "2", className: "border border-gray-900 p-2 align-top" },
-                    React.createElement("p", null,
-                        React.createElement("strong", null, "\u0E2D\u0E32\u0E01\u0E32\u0E23\u0E2A\u0E33\u0E04\u0E31\u0E0D:"),
-                        " ",
-                        caseData.chief_complaints),
-                    React.createElement("p", null,
-                        React.createElement("strong", null, "\u0E1B\u0E23\u0E30\u0E27\u0E31\u0E15\u0E34\u0E01\u0E32\u0E23\u0E40\u0E08\u0E47\u0E1A\u0E1B\u0E48\u0E27\u0E22:"),
-                        " ",
-                        caseData.history_of_illness),
-                    React.createElement("p", null,
-                        React.createElement("strong", null, "\u0E42\u0E23\u0E04\u0E1B\u0E23\u0E30\u0E08\u0E33\u0E15\u0E31\u0E27:"),
-                        " ",
-                        caseData.chronic_disease),
-                    React.createElement("p", null,
-                        React.createElement("strong", null, "\u0E1B\u0E23\u0E30\u0E27\u0E31\u0E15\u0E34\u0E41\u0E1E\u0E49\u0E22\u0E32:"),
-                        " ",
-                        caseData.drug_allergy),
-                    React.createElement("p", null,
-                        React.createElement("strong", null, "\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E40\u0E1E\u0E34\u0E48\u0E21\u0E40\u0E15\u0E34\u0E21:"),
-                        " ",
-                        caseData.additional_info),
-                    React.createElement("p", null,
-                        React.createElement("strong", null, "\u0E1B\u0E31\u0E0D\u0E2B\u0E32\u0E17\u0E35\u0E48\u0E1E\u0E1A:"),
-                        " ",
-                        caseData.problem_found))),
-            React.createElement("tr", null,
-                React.createElement("td", { colSpan: "4", className: "border border-gray-900 p-2 font-bold", style: { backgroundColor: '#f0f0f0', textAlign: 'center' } }, "\u0E01\u0E32\u0E23\u0E14\u0E33\u0E40\u0E19\u0E34\u0E19\u0E01\u0E32\u0E23\u0E40\u0E1A\u0E37\u0E49\u0E2D\u0E07\u0E15\u0E49\u0E19\u0E02\u0E2D\u0E07\u0E40\u0E20\u0E2A\u0E31\u0E0A\u0E01\u0E23")),
-            React.createElement("tr", null,
-                React.createElement("td", { colSpan: "4", className: "border border-gray-900 p-2 align-top" },
-                    React.createElement("p", null,
-                        "[",
-                        treatmentBoxChecked('give_treatment'),
-                        "] \u0E43\u0E2B\u0E49\u0E01\u0E32\u0E23\u0E23\u0E31\u0E01\u0E29\u0E32\u0E40\u0E1A\u0E37\u0E49\u0E2D\u0E07\u0E15\u0E49\u0E19 ",
-                        (caseData.initial_treatment || []).includes('give_treatment') && caseData.treatment_note && `(*ระบุ: ${caseData.treatment_note}*)`),
-                    React.createElement("p", null,
-                        "[",
-                        treatmentBoxChecked('give_advice'),
-                        "] \u0E43\u0E2B\u0E49\u0E04\u0E33\u0E41\u0E19\u0E30\u0E19\u0E33\u0E01\u0E32\u0E23\u0E43\u0E0A\u0E49\u0E22\u0E32/\u0E01\u0E32\u0E23\u0E14\u0E39\u0E41\u0E25\u0E15\u0E31\u0E27\u0E40\u0E2D\u0E07 ",
-                        (caseData.initial_treatment || []).includes('give_advice') && caseData.advice_note && `(*ระบุ: ${caseData.advice_note}*)`),
-                    React.createElement("p", null,
-                        "[",
-                        treatmentBoxChecked('other_action'),
-                        "] \u0E2D\u0E37\u0E48\u0E19\u0E46 ",
-                        (caseData.initial_treatment || []).includes('other_action') && caseData.other_note && `(*ระบุ: ${caseData.other_note}*)`))),
-            React.createElement("tr", null,
-                React.createElement("td", { colSpan: "4", className: "p-4 pt-8 border-gray-900 text-right", style: { borderTop: 'none', borderBottom: 'none' } },
-                    React.createElement("div", { style: { textAlign: 'center', marginTop: '30px' } },
-                        React.createElement("p", null, "(\u0E25\u0E07\u0E0A\u0E37\u0E48\u0E2D) ....................................................."),
-                        React.createElement("p", null,
-                            "\u0E40\u0E20\u0E2A\u0E31\u0E0A\u0E01\u0E23\u0E1C\u0E39\u0E49\u0E2A\u0E48\u0E07\u0E15\u0E48\u0E2D: ",
-                            caseData.pharmacist_name),
-                        React.createElement("p", null,
-                            "\u0E40\u0E25\u0E02\u0E1B\u0E23\u0E30\u0E01\u0E2D\u0E1A\u0E27\u0E34\u0E0A\u0E32\u0E0A\u0E35\u0E1E: ",
-                            caseData.license_no,
-                            " | \u0E27\u0E31\u0E19\u0E17\u0E35\u0E48: ",
-                            getCurrentDate())),
-                    React.createElement("div", { style: { textAlign: 'left', marginTop: '15px', borderTop: '1px solid #ccc', paddingTop: '5px' } },
-                        React.createElement("p", null,
-                            React.createElement("strong", null, "\u0E2A\u0E48\u0E07\u0E15\u0E48\u0E2D\u0E08\u0E32\u0E01\u0E23\u0E49\u0E32\u0E19\u0E22\u0E32:"),
-                            " ",
-                            caseData.pharmacy_name,
-                            " | ",
-                            React.createElement("strong", null, "\u0E42\u0E17\u0E23\u0E28\u0E31\u0E1E\u0E17\u0E4C:"),
-                            " ",
-                            caseData.pharmacy_tel),
-                        React.createElement("p", null,
-                            React.createElement("strong", null, "\u0E17\u0E35\u0E48\u0E2D\u0E22\u0E39\u0E48\u0E23\u0E49\u0E32\u0E19\u0E22\u0E32:"),
-                            " ",
-                            caseData.pharmacy_address)))),
-            React.createElement("tr", null,
-                React.createElement("td", { colSpan: "4", className: "p-2 border border-gray-900 header-row", style: { fontSize: '10pt', backgroundColor: '#f0f0f0', textAlign: 'center' } },
-                    React.createElement("p", null, "\u0E02\u0E2D\u0E04\u0E27\u0E32\u0E21\u0E23\u0E48\u0E27\u0E21\u0E21\u0E37\u0E2D\u0E2B\u0E19\u0E48\u0E27\u0E22\u0E07\u0E32\u0E19\u0E23\u0E31\u0E1A\u0E1C\u0E39\u0E49\u0E1B\u0E48\u0E27\u0E22\u0E40\u0E1E\u0E37\u0E48\u0E2D\u0E23\u0E31\u0E01\u0E29\u0E32\u0E41\u0E25\u0E30\u0E15\u0E2D\u0E1A\u0E01\u0E25\u0E31\u0E1A\u0E15\u0E49\u0E19\u0E17\u0E32\u0E07\u0E15\u0E32\u0E21\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E02\u0E49\u0E32\u0E07\u0E15\u0E49\u0E19")))))));
-// 4. Referral Print View
-const ReferralPrintView = ({ caseData, onEdit, onFinalize }) => {
-    const getCurrentDate = () => new Date().toLocaleDateString('th-TH', { day: 'numeric', month: 'numeric', year: 'numeric' });
-    const treatmentBoxChecked = (name) => (caseData.initial_treatment || []).includes(name) ? '✓' : '';
-    return (React.createElement("div", { className: "dashboard-container pt-8" },
-        React.createElement("div", { className: "form-section flex justify-between items-center no-print" },
-            React.createElement("h2", { className: "text-xl font-bold text-gray-800" },
-                React.createElement("i", { className: "fa-solid fa-print mr-2 text-blue-600" }),
-                " \u0E15\u0E31\u0E27\u0E2D\u0E22\u0E48\u0E32\u0E07\u0E1E\u0E34\u0E21\u0E1E\u0E4C"),
-            React.createElement("div", { className: "space-x-3" },
-                React.createElement("button", { onClick: onEdit, className: "btn-action btn-gray" }, "\u0E22\u0E49\u0E2D\u0E19\u0E01\u0E25\u0E31\u0E1A"),
-                React.createElement("button", { onClick: onFinalize, className: "btn-action btn-green" }, "\u0E1E\u0E34\u0E21\u0E1E\u0E4C\u0E41\u0E25\u0E30\u0E40\u0E2A\u0E23\u0E47\u0E08\u0E2A\u0E34\u0E49\u0E19"))),
-        React.createElement("div", { id: "view-area", className: "no-print bg-white shadow-lg p-2 rounded overflow-hidden mb-10" }, renderReportBody(caseData, getCurrentDate, treatmentBoxChecked, 'view-area-content')),
-        ReactDOM.createPortal(renderReportBody(caseData, getCurrentDate, treatmentBoxChecked, 'print-area'), document.body)));
-};
-// 5. Standard Report Print View
-const StandardReportPrintView = ({ caseData, onHide, onPostPrint }) => {
-    var _a;
-    useEffect(() => { const timer = setTimeout(() => { window.print(); onPostPrint(); onHide(); }, 500); return () => clearTimeout(timer); }, [onHide, onPostPrint]);
-    const formatDate = (ds) => { try {
-        return new Date(ds + 'T00:00:00').toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
-    }
-    catch (_a) {
-        return ds;
-    } };
-    const ccText = (Array.isArray(caseData.chief_complaints) ? caseData.chief_complaints.join('\n') : (_a = caseData.chief_complaints) === null || _a === void 0 ? void 0 : _a.replace(/; /g, '\n')) || '-';
-    let printBranch = fullBranchNameMap[caseData.branch] || branchMap[caseData.branch] || 'ไม่ระบุสาขา';
-    return ReactDOM.createPortal(React.createElement("div", { id: "print-area", className: "p-8 font-kanit text-gray-900 bg-white", style: { maxWidth: '210mm', margin: '0 auto' } },
-        React.createElement("h1", { className: "text-xl font-bold text-center mb-4" }, "\u0E41\u0E1A\u0E1A\u0E23\u0E32\u0E22\u0E07\u0E32\u0E19\u0E1A\u0E31\u0E19\u0E17\u0E36\u0E01\u0E01\u0E32\u0E23\u0E23\u0E31\u0E01\u0E29\u0E32\u0E41\u0E25\u0E30\u0E15\u0E34\u0E14\u0E15\u0E32\u0E21\u0E1C\u0E39\u0E49\u0E1B\u0E48\u0E27\u0E22 (\u0E23\u0E49\u0E32\u0E19\u0E22\u0E32\u0E04\u0E25\u0E34\u0E19\u0E34\u0E04\u0E22\u0E32 \u0E21\u0E2D \u0E2D\u0E2D)"),
-        React.createElement("table", { className: "w-full report-table border-collapse border border-gray-500 text-sm" },
-            React.createElement("thead", null,
-                React.createElement("tr", { className: "bg-gray-100" },
-                    React.createElement("td", { colSpan: "2", className: "p-2 border border-gray-500 font-semibold" },
-                        "\u0E2A\u0E32\u0E02\u0E32\u0E17\u0E35\u0E48\u0E23\u0E32\u0E22\u0E07\u0E32\u0E19: ",
-                        printBranch),
-                    React.createElement("td", { colSpan: "2", className: "p-2 border border-gray-500 font-semibold" },
-                        "\u0E27\u0E31\u0E19\u0E17\u0E35\u0E48\u0E23\u0E32\u0E22\u0E07\u0E32\u0E19: ",
-                        caseData.timestamp))),
-            React.createElement("tbody", null,
-                React.createElement("tr", null,
-                    React.createElement("td", { colSpan: "2", className: "p-2 border border-gray-500" },
-                        "\u0E0A\u0E37\u0E48\u0E2D - \u0E2A\u0E01\u0E38\u0E25: ",
-                        caseData.patient_name),
-                    React.createElement("td", { colSpan: "2", className: "p-2 border border-gray-500" },
-                        "\u0E42\u0E17\u0E23\u0E28\u0E31\u0E1E\u0E17\u0E4C: ",
-                        caseData.tel || '-')),
-                React.createElement("tr", null,
-                    React.createElement("td", { className: "p-2 border border-gray-500" },
-                        "\u0E19\u0E49\u0E33\u0E2B\u0E19\u0E31\u0E01: ",
-                        caseData.weight || '-',
-                        " \u0E01\u0E01."),
-                    React.createElement("td", { className: "p-2 border border-gray-500" },
-                        "\u0E2A\u0E48\u0E27\u0E19\u0E2A\u0E39\u0E07: ",
-                        caseData.height || '-',
-                        " \u0E0B\u0E21."),
-                    React.createElement("td", { colSpan: "2", className: "p-2 border border-gray-500" },
-                        "\u0E2D\u0E32\u0E22\u0E38: ",
-                        caseData.age || '-',
-                        " \u0E1B\u0E35")),
-                React.createElement("tr", null,
-                    React.createElement("td", { colSpan: "4", className: "p-2 border border-gray-500" },
-                        "\u0E42\u0E23\u0E04\u0E1B\u0E23\u0E30\u0E08\u0E33\u0E15\u0E31\u0E27: ",
-                        caseData.chronic_disease || '-')),
-                React.createElement("tr", null,
-                    React.createElement("td", { colSpan: "4", className: "p-2 border border-gray-500" },
-                        "\u0E1B\u0E23\u0E30\u0E27\u0E31\u0E15\u0E34\u0E01\u0E32\u0E23\u0E41\u0E1E\u0E49\u0E22\u0E32: ",
-                        caseData.drug_allergy || '-')),
-                React.createElement("tr", { className: "bg-blue-50" },
-                    React.createElement("td", { colSpan: "4", className: "p-2 border border-gray-500 font-bold" }, "\u0E2A\u0E48\u0E27\u0E19\u0E17\u0E35\u0E48 2 \u0E01\u0E32\u0E23\u0E23\u0E31\u0E01\u0E29\u0E32")),
-                React.createElement("tr", null,
-                    React.createElement("td", { colSpan: "4", className: "p-2 border border-gray-500 h-20 align-top" },
-                        React.createElement("span", { className: "font-semibold" }, "\u0E2D\u0E32\u0E01\u0E32\u0E23\u0E2A\u0E33\u0E04\u0E31\u0E0D:"),
-                        React.createElement("div", { style: { whiteSpace: 'pre-wrap' } }, ccText))),
-                React.createElement("tr", null,
-                    React.createElement("td", { colSpan: "4", className: "p-2 border border-gray-500 h-20 align-top" },
-                        React.createElement("span", { className: "font-semibold" }, "\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E08\u0E32\u0E01\u0E01\u0E32\u0E23\u0E0B\u0E31\u0E01\u0E1B\u0E23\u0E30\u0E27\u0E31\u0E15\u0E34:"),
-                        React.createElement("div", { className: "whitespace-pre-wrap" }, caseData.history || '-'))),
-                React.createElement("tr", null,
-                    React.createElement("td", { colSpan: "4", className: "p-2 border border-gray-500" },
-                        React.createElement("span", { className: "font-semibold" }, "\u0E01\u0E32\u0E23\u0E27\u0E34\u0E19\u0E34\u0E08\u0E09\u0E31\u0E22\u0E40\u0E1A\u0E37\u0E49\u0E2D\u0E07\u0E15\u0E49\u0E19:"),
-                        React.createElement("div", null, caseData.diagnosis || '-'))),
-                React.createElement("tr", null,
-                    React.createElement("td", { colSpan: "4", className: "p-2 border border-gray-500 h-20 align-top" },
-                        React.createElement("span", { className: "font-semibold" }, "\u0E01\u0E32\u0E23\u0E23\u0E31\u0E01\u0E29\u0E32:"),
-                        React.createElement("div", { className: "whitespace-pre-wrap" }, caseData.treatment || '-'))),
-                React.createElement("tr", { className: "bg-blue-50" },
-                    React.createElement("td", { colSpan: "4", className: "p-2 border border-gray-500 font-bold" }, "\u0E2A\u0E48\u0E27\u0E19\u0E17\u0E35\u0E48 3 \u0E01\u0E32\u0E23\u0E15\u0E34\u0E14\u0E15\u0E32\u0E21")),
-                React.createElement("tr", null,
-                    React.createElement("td", { colSpan: "4", className: "p-2 border border-gray-500" },
-                        React.createElement("span", { className: "font-semibold" }, "\u0E27\u0E31\u0E19\u0E17\u0E35\u0E48\u0E15\u0E34\u0E14\u0E15\u0E32\u0E21:"),
-                        " ",
-                        formatDate(caseData.follow_up_date))),
-                React.createElement("tr", null,
-                    React.createElement("td", { colSpan: "4", className: "p-2 border border-gray-500 h-20 align-top" },
-                        React.createElement("span", { className: "font-semibold" }, "\u0E1C\u0E25\u0E01\u0E32\u0E23\u0E15\u0E34\u0E14\u0E15\u0E32\u0E21:"),
-                        React.createElement("div", { className: "whitespace-pre-wrap" }, caseData.follow_up_result || '-'))),
-                React.createElement("tr", null,
-                    React.createElement("td", { colSpan: "4", className: "p-4 text-right" },
-                        React.createElement("p", { className: "mt-8" }, "\u0E25\u0E07\u0E0A\u0E37\u0E48\u0E2D.................................................."),
-                        React.createElement("p", null, "(\u0E40\u0E20\u0E2A\u0E31\u0E0A\u0E01\u0E23/\u0E1C\u0E39\u0E49\u0E23\u0E32\u0E22\u0E07\u0E32\u0E19)")))))), document.body);
-};
-// 6. Referral Form (New Design)
-const ReferralForm = ({ initialData, onCancel, onSendReport }) => {
-    const [formData, setFormData] = useState(initialData || {
-        pharmacy_name: fullBranchNameMap['1'], pharmacy_address: '', pharmacy_tel: '', pharmacist_name: '', license_no: 'ภ.',
-        patient_name: '', cid: '', gender: 'ชาย', age: '', address: '', tel: '', health_scheme: 'UC', reason_for_referral: 'further investigation/management',
-        drug_review: '', chief_complaints: '', history_of_illness: '', chronic_disease: '', drug_allergy: '', additional_info: '', problem_found: '',
-        initial_treatment: [], treatment_note: '', advice_note: '', other_note: ''
+
+        // HTML โครงสร้างการ์ดสินค้า
+        card.innerHTML = `
+            <div style="cursor: pointer;" onclick="openPopup('${product.code}')">
+                <div class="product-img-wrapper">
+                    <img src="${coverImage}" alt="${product.name}" 
+                         onerror="this.style.display='none'; this.parentElement.innerHTML='<span style=\\'font-size:1rem; color:#ccc;\\'>${product.code}</span>'">
+                </div>
+                <div class="product-name">${product.name}</div>
+            </div>
+            
+            <div class="card-actions">
+                <button class="action-btn btn-promote" onclick="openPopup('${product.code}')">ภาพ promote</button>
+                ${videoBtnHtml}
+            </div>
+        `;
+        
+        gridContainer.appendChild(card);
     });
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const isEditMode = initialData != null;
-    const handleChange = (e) => {
-        const { name, value, type, checked } = e.target;
-        if (type === 'checkbox') {
-            setFormData(prev => ({ ...prev, initial_treatment: checked ? [...prev.initial_treatment, name] : prev.initial_treatment.filter(n => n !== name) }));
-        }
-        else
-            setFormData(prev => ({ ...prev, [name]: value }));
-    };
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        if (!formData.patient_name || !formData.pharmacist_name) {
-            alert('กรุณากรอกชื่อผู้ป่วยและเภสัชกรผู้ส่งต่อ');
-            return;
-        }
-        setIsSubmitting(true);
-        onSendReport(formData, 'referral').finally(() => setIsSubmitting(false));
-    };
-    return (React.createElement("div", { className: "dashboard-container pt-6" },
-        React.createElement("button", { onClick: onCancel, className: "mb-4 text-gray-500 hover:text-blue-600 font-medium flex items-center transition" },
-            React.createElement("i", { className: "fa-solid fa-arrow-left mr-2" }),
-            " \u0E01\u0E25\u0E31\u0E1A\u0E2B\u0E19\u0E49\u0E32\u0E2B\u0E25\u0E31\u0E01"),
-        React.createElement("div", { className: "form-section" },
-            React.createElement("h1", { className: "text-xl font-bold text-gray-800 mb-6 border-b pb-4" },
-                React.createElement("i", { className: "fa-solid fa-hospital-user mr-2 text-blue-600" }),
-                " \u0E41\u0E1A\u0E1A\u0E1F\u0E2D\u0E23\u0E4C\u0E21\u0E2A\u0E48\u0E07\u0E15\u0E48\u0E2D\u0E1C\u0E39\u0E49\u0E1B\u0E48\u0E27\u0E22 (\u0E2A\u0E1B\u0E2A\u0E0A.)"),
-            React.createElement("form", { onSubmit: handleSubmit },
-                React.createElement("div", { className: "bg-blue-50/50 p-6 rounded-xl mb-6 border border-blue-100" },
-                    React.createElement("h2", { className: "font-bold text-blue-700 mb-4" }, "\u0E2A\u0E48\u0E27\u0E19\u0E2B\u0E31\u0E27: \u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E1C\u0E39\u0E49\u0E2A\u0E48\u0E07\u0E15\u0E48\u0E2D"),
-                    React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-4" },
-                        React.createElement("div", null,
-                            React.createElement("label", { className: "text-sm font-semibold text-gray-600" }, "\u0E40\u0E20\u0E2A\u0E31\u0E0A\u0E01\u0E23\u0E1C\u0E39\u0E49\u0E2A\u0E48\u0E07\u0E15\u0E48\u0E2D"),
-                            React.createElement("input", { type: "text", name: "pharmacist_name", value: formData.pharmacist_name, onChange: handleChange, required: true, className: "input-field mt-1" })),
-                        React.createElement("div", null,
-                            React.createElement("label", { className: "text-sm font-semibold text-gray-600" }, "\u0E23\u0E49\u0E32\u0E19\u0E22\u0E32"),
-                            React.createElement("select", { name: "pharmacy_name", value: formData.pharmacy_name, onChange: handleChange, className: "select-field mt-1" }, Object.values(fullBranchNameMap).map(n => React.createElement("option", { key: n, value: n }, n)))),
-                        React.createElement("div", null,
-                            React.createElement("label", { className: "text-sm font-semibold text-gray-600" }, "\u0E40\u0E25\u0E02\u0E1B\u0E23\u0E30\u0E01\u0E2D\u0E1A\u0E27\u0E34\u0E0A\u0E32\u0E0A\u0E35\u0E1E"),
-                            React.createElement("input", { type: "text", name: "license_no", value: formData.license_no, onChange: handleChange, className: "input-field mt-1" })),
-                        React.createElement("div", null,
-                            React.createElement("label", { className: "text-sm font-semibold text-gray-600" }, "\u0E40\u0E1A\u0E2D\u0E23\u0E4C\u0E42\u0E17\u0E23\u0E28\u0E31\u0E1E\u0E17\u0E4C\u0E23\u0E49\u0E32\u0E19\u0E22\u0E32"),
-                            React.createElement("input", { type: "tel", name: "pharmacy_tel", value: formData.pharmacy_tel, onChange: handleChange, className: "input-field mt-1" })),
-                        React.createElement("div", { className: "md:col-span-2" },
-                            React.createElement("label", { className: "text-sm font-semibold text-gray-600" }, "\u0E17\u0E35\u0E48\u0E2D\u0E22\u0E39\u0E48\u0E23\u0E49\u0E32\u0E19\u0E22\u0E32"),
-                            React.createElement("textarea", { name: "pharmacy_address", rows: "2", value: formData.pharmacy_address, onChange: handleChange, className: "textarea-field mt-1" })))),
-                React.createElement("h2", { className: "text-lg font-bold text-gray-700 mt-6 mb-3" }, "\u0E2A\u0E48\u0E27\u0E19\u0E17\u0E35\u0E48 1: \u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E17\u0E31\u0E48\u0E27\u0E44\u0E1B"),
-                React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-4" },
-                    React.createElement("div", { className: "md:col-span-3" },
-                        React.createElement("label", { className: "text-sm font-semibold text-gray-600" }, "\u0E0A\u0E37\u0E48\u0E2D\u0E1C\u0E39\u0E49\u0E1B\u0E48\u0E27\u0E22"),
-                        React.createElement("input", { type: "text", name: "patient_name", value: formData.patient_name, onChange: handleChange, required: true, className: "input-field mt-1" })),
-                    React.createElement("div", null,
-                        React.createElement("label", { className: "text-sm font-semibold text-gray-600" }, "\u0E40\u0E25\u0E02 \u0E1B\u0E0A\u0E0A."),
-                        React.createElement("input", { type: "text", name: "cid", value: formData.cid, onChange: handleChange, maxLength: "13", className: "input-field mt-1" })),
-                    React.createElement("div", null,
-                        React.createElement("label", { className: "text-sm font-semibold text-gray-600" }, "\u0E40\u0E1E\u0E28"),
-                        React.createElement("select", { name: "gender", value: formData.gender, onChange: handleChange, className: "select-field mt-1" },
-                            React.createElement("option", { value: "\u0E0A\u0E32\u0E22" }, "\u0E0A\u0E32\u0E22"),
-                            React.createElement("option", { value: "\u0E2B\u0E0D\u0E34\u0E07" }, "\u0E2B\u0E0D\u0E34\u0E07"),
-                            React.createElement("option", { value: "\u0E2D\u0E37\u0E48\u0E19\u0E46" }, "\u0E2D\u0E37\u0E48\u0E19\u0E46"))),
-                    React.createElement("div", null,
-                        React.createElement("label", { className: "text-sm font-semibold text-gray-600" }, "\u0E2D\u0E32\u0E22\u0E38"),
-                        React.createElement("input", { type: "number", name: "age", value: formData.age, onChange: handleChange, className: "input-field mt-1" })),
-                    React.createElement("div", { className: "md:col-span-2" },
-                        React.createElement("label", { className: "text-sm font-semibold text-gray-600" }, "\u0E17\u0E35\u0E48\u0E2D\u0E22\u0E39\u0E48"),
-                        React.createElement("input", { type: "text", name: "address", value: formData.address, onChange: handleChange, className: "input-field mt-1" })),
-                    React.createElement("div", null,
-                        React.createElement("label", { className: "text-sm font-semibold text-gray-600" }, "\u0E42\u0E17\u0E23\u0E28\u0E31\u0E1E\u0E17\u0E4C"),
-                        React.createElement("input", { type: "tel", name: "tel", value: formData.tel, onChange: handleChange, className: "input-field mt-1" })),
-                    React.createElement("div", { className: "md:col-span-3" },
-                        React.createElement("label", { className: "text-sm font-semibold text-gray-600" }, "\u0E2A\u0E34\u0E17\u0E18\u0E34\u0E01\u0E32\u0E23\u0E23\u0E31\u0E01\u0E29\u0E32"),
-                        React.createElement("select", { name: "health_scheme", value: formData.health_scheme, onChange: handleChange, className: "select-field mt-1" },
-                            React.createElement("option", { value: "UC" }, "UC"),
-                            React.createElement("option", { value: "\u0E02\u0E49\u0E32\u0E23\u0E32\u0E0A\u0E01\u0E32\u0E23" }, "\u0E02\u0E49\u0E32\u0E23\u0E32\u0E0A\u0E01\u0E32\u0E23"),
-                            React.createElement("option", { value: "\u0E1B\u0E23\u0E30\u0E01\u0E31\u0E19\u0E2A\u0E31\u0E07\u0E04\u0E21" }, "\u0E1B\u0E23\u0E30\u0E01\u0E31\u0E19\u0E2A\u0E31\u0E07\u0E04\u0E21"))),
-                    React.createElement("div", { className: "md:col-span-3" },
-                        React.createElement("label", { className: "text-sm font-semibold text-gray-600" }, "\u0E40\u0E2B\u0E15\u0E38\u0E1C\u0E25\u0E43\u0E19\u0E01\u0E32\u0E23\u0E2A\u0E48\u0E07\u0E15\u0E48\u0E2D"),
-                        React.createElement("select", { name: "reason_for_referral", value: formData.reason_for_referral, onChange: handleChange, className: "select-field mt-1" },
-                            React.createElement("option", { value: "further investigation/management" }, "further investigation/management"),
-                            React.createElement("option", { value: "Drug-related problem" }, "Drug-related problem"),
-                            React.createElement("option", { value: "Loss of follow-up" }, "Loss of follow-up")))),
-                React.createElement("h2", { className: "text-lg font-bold text-gray-700 mt-6 mb-3" }, "\u0E2A\u0E48\u0E27\u0E19\u0E17\u0E35\u0E48 2: \u0E23\u0E32\u0E22\u0E25\u0E30\u0E40\u0E2D\u0E35\u0E22\u0E14\u0E01\u0E32\u0E23\u0E2A\u0E48\u0E07\u0E15\u0E48\u0E2D"),
-                React.createElement("div", { className: "grid gap-4" },
-                    React.createElement("div", null,
-                        React.createElement("label", { className: "text-sm font-semibold text-gray-600" }, "\u0E01\u0E32\u0E23\u0E17\u0E1A\u0E17\u0E27\u0E19\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23\u0E22\u0E32"),
-                        React.createElement("textarea", { name: "drug_review", rows: "2", value: formData.drug_review, onChange: handleChange, className: "textarea-field mt-1" })),
-                    React.createElement("div", null,
-                        React.createElement("label", { className: "text-sm font-semibold text-gray-600" }, "\u0E2D\u0E32\u0E01\u0E32\u0E23\u0E2A\u0E33\u0E04\u0E31\u0E0D"),
-                        React.createElement("textarea", { name: "chief_complaints", rows: "2", value: formData.chief_complaints, onChange: handleChange, required: true, className: "textarea-field mt-1" })),
-                    React.createElement("div", null,
-                        React.createElement("label", { className: "text-sm font-semibold text-gray-600" }, "\u0E1B\u0E23\u0E30\u0E27\u0E31\u0E15\u0E34\u0E01\u0E32\u0E23\u0E40\u0E08\u0E47\u0E1A\u0E1B\u0E48\u0E27\u0E22"),
-                        React.createElement("textarea", { name: "history_of_illness", rows: "3", value: formData.history_of_illness, onChange: handleChange, className: "textarea-field mt-1" })),
-                    React.createElement("div", { className: "grid md:grid-cols-2 gap-4" },
-                        React.createElement("div", null,
-                            React.createElement("label", { className: "text-sm font-semibold text-gray-600" }, "\u0E42\u0E23\u0E04\u0E1B\u0E23\u0E30\u0E08\u0E33\u0E15\u0E31\u0E27"),
-                            React.createElement("input", { type: "text", name: "chronic_disease", value: formData.chronic_disease, onChange: handleChange, className: "input-field mt-1" })),
-                        React.createElement("div", null,
-                            React.createElement("label", { className: "text-sm font-semibold text-gray-600" }, "\u0E1B\u0E23\u0E30\u0E27\u0E31\u0E15\u0E34\u0E41\u0E1E\u0E49\u0E22\u0E32"),
-                            React.createElement("input", { type: "text", name: "drug_allergy", value: formData.drug_allergy, onChange: handleChange, className: "input-field mt-1" }))),
-                    React.createElement("div", null,
-                        React.createElement("label", { className: "text-sm font-semibold text-gray-600" }, "\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E40\u0E1E\u0E34\u0E48\u0E21\u0E40\u0E15\u0E34\u0E21"),
-                        React.createElement("textarea", { name: "additional_info", rows: "2", value: formData.additional_info, onChange: handleChange, className: "textarea-field mt-1" })),
-                    React.createElement("div", null,
-                        React.createElement("label", { className: "text-sm font-semibold text-gray-600" }, "\u0E1B\u0E31\u0E0D\u0E2B\u0E32\u0E17\u0E35\u0E48\u0E1E\u0E1A"),
-                        React.createElement("textarea", { name: "problem_found", rows: "2", value: formData.problem_found, onChange: handleChange, className: "textarea-field mt-1" }))),
-                React.createElement("h2", { className: "text-lg font-bold text-gray-700 mt-6 mb-3" }, "\u0E2A\u0E48\u0E27\u0E19\u0E17\u0E35\u0E48 3: \u0E01\u0E32\u0E23\u0E14\u0E33\u0E40\u0E19\u0E34\u0E19\u0E01\u0E32\u0E23\u0E40\u0E1A\u0E37\u0E49\u0E2D\u0E07\u0E15\u0E49\u0E19"),
-                React.createElement("div", { className: "bg-gray-50 p-4 rounded-xl space-y-3" }, ['give_treatment', 'give_advice', 'other_action'].map(action => (React.createElement("div", { key: action, className: "flex flex-col sm:flex-row sm:items-center gap-2" },
-                    React.createElement("div", { className: "flex items-center min-w-[200px]" },
-                        React.createElement("input", { type: "checkbox", name: action, checked: formData.initial_treatment.includes(action), onChange: handleChange, className: "w-5 h-5 accent-blue-600 mr-2" }),
-                        React.createElement("span", { className: "text-sm font-medium text-gray-700" }, action === 'give_treatment' ? 'ให้การรักษาเบื้องต้น' : action === 'give_advice' ? 'ให้คำแนะนำ' : 'อื่นๆ')),
-                    React.createElement("input", { type: "text", name: action === 'give_treatment' ? 'treatment_note' : action === 'give_advice' ? 'advice_note' : 'other_note', value: formData[action === 'give_treatment' ? 'treatment_note' : action === 'give_advice' ? 'advice_note' : 'other_note'], onChange: handleChange, placeholder: "\u0E23\u0E30\u0E1A\u0E38\u0E23\u0E32\u0E22\u0E25\u0E30\u0E40\u0E2D\u0E35\u0E22\u0E14...", className: "input-field !py-1 flex-grow" }))))),
-                React.createElement("button", { type: "submit", disabled: isSubmitting, className: "w-full mt-8 btn-action btn-blue w-full py-4 text-lg" },
-                    React.createElement("span", { className: "text-xl mr-2" }, "\uD83D\uDDA8\uFE0F"),
-                    " ",
-                    isSubmitting ? 'กำลังจัดเตรียมรายงาน...' : 'ตรวจสอบตัวอย่างพิมพ์ (ก่อนส่งต่อ)')))));
-};
-// 7. Case Form (New Design)
-const CaseForm = ({ initialCase, onSave, onCancel, onDelete }) => {
-    const [formData, setFormData] = useState(initialCase ? { ...initialCase, chief_complaints: typeof initialCase.chief_complaints === 'string' ? initialCase.chief_complaints.split('; ').filter(Boolean) : initialCase.chief_complaints || [] } : { branch: '1', reporter: '', patient_name: '', tel: '', age: '', weight: '', height: '', chronic_disease: '', drug_allergy: '', chief_complaints: [], history: '', diagnosis: '', treatment: '', follow_up_date: '', follow_up_result: '', status: 'รอติดตาม' });
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const isEditMode = initialCase !== null;
-    const handleChange = (e) => {
-        const { name, value, type, checked } = e.target;
-        if (type === 'checkbox') {
-            setFormData(prev => ({ ...prev, chief_complaints: checked ? [...new Set([...prev.chief_complaints, value])] : prev.chief_complaints.filter(c => c !== value) }));
-        }
-        else
-            setFormData(prev => ({ ...prev, [name]: value }));
-    };
-    const handleSubmit = (e, newStatus = null, shouldDelete = false) => {
-        e.preventDefault();
-        if (!formData.patient_name || !formData.branch || !formData.reporter || formData.chief_complaints.length === 0) {
-            alert('กรุณากรอกข้อมูลผู้ป่วย, สาขา, ผู้รายงาน และอาการสำคัญ');
-            return;
-        }
-        if (shouldDelete) {
-            onDelete(formData.id);
-            return;
-        }
-        if (isSubmitting)
-            return;
-        setIsSubmitting(true);
-        const finalData = { ...formData, chief_complaints: Array.isArray(formData.chief_complaints) ? formData.chief_complaints.join('; ') : formData.chiefComplaints, status: newStatus || formData.status };
-        if (newStatus === 'ปิดเคสแล้ว') {
-            if (confirm("บันทึกสถานะ 'ปิดเคสแล้ว' เรียบร้อย ต้องการพิมพ์รายงานทันทีหรือไม่?"))
-                onSave(finalData, isEditMode, true);
-            else
-                setIsSubmitting(false);
-        }
-        else {
-            onSave(finalData, isEditMode);
-            setIsSubmitting(false);
-        }
-    };
-    return (React.createElement("div", { className: "dashboard-container pt-6" },
-        React.createElement("button", { onClick: onCancel, className: "mb-4 text-gray-500 hover:text-blue-600 font-medium flex items-center transition" },
-            React.createElement("i", { className: "fa-solid fa-arrow-left mr-2" }),
-            " \u0E01\u0E25\u0E31\u0E1A\u0E2B\u0E19\u0E49\u0E32\u0E2B\u0E25\u0E31\u0E01"),
-        React.createElement("div", { className: "form-section relative overflow-hidden" },
-            React.createElement("div", { className: "absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-600 via-blue-400 to-blue-600" }),
-            React.createElement("h1", { className: "text-2xl font-bold text-gray-800 mb-6 border-b pb-4 mt-2" }, isEditMode ? `แก้ไขเคส: ${formData.patient_name}` : 'บันทึกเคสใหม่'),
-            React.createElement("form", null,
-                React.createElement("h2", { className: "text-lg font-bold text-blue-700 mb-3" }, "1. \u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E01\u0E32\u0E23\u0E23\u0E32\u0E22\u0E07\u0E32\u0E19"),
-                React.createElement("div", { className: "grid md:grid-cols-2 gap-4 mb-6 bg-blue-50/50 p-4 rounded-xl border border-blue-100" },
-                    React.createElement("div", null,
-                        React.createElement("label", { className: "text-sm font-semibold text-gray-600" }, "\u0E2A\u0E32\u0E02\u0E32\u0E17\u0E35\u0E48\u0E23\u0E32\u0E22\u0E07\u0E32\u0E19 *"),
-                        React.createElement("select", { name: "branch", value: formData.branch, onChange: handleChange, className: "select-field mt-1" }, Object.keys(branchMap).map(id => React.createElement("option", { key: id, value: id }, branchMap[id])))),
-                    React.createElement("div", null,
-                        React.createElement("label", { className: "text-sm font-semibold text-gray-600" }, "\u0E1C\u0E39\u0E49\u0E23\u0E32\u0E22\u0E07\u0E32\u0E19 *"),
-                        React.createElement("input", { type: "text", name: "reporter", value: formData.reporter, onChange: handleChange, className: "input-field mt-1" }))),
-                React.createElement("h2", { className: "text-lg font-bold text-blue-700 mb-3" }, "2. \u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E1C\u0E39\u0E49\u0E1B\u0E48\u0E27\u0E22\u0E41\u0E25\u0E30\u0E1B\u0E23\u0E30\u0E27\u0E31\u0E15\u0E34"),
-                React.createElement("div", { className: "grid md:grid-cols-3 gap-4 mb-6" },
-                    React.createElement("div", { className: "md:col-span-3" },
-                        React.createElement("label", { className: "text-sm font-semibold text-gray-600" }, "\u0E0A\u0E37\u0E48\u0E2D-\u0E2A\u0E01\u0E38\u0E25 \u0E1C\u0E39\u0E49\u0E1B\u0E48\u0E27\u0E22 *"),
-                        React.createElement("input", { type: "text", name: "patient_name", value: formData.patient_name, onChange: handleChange, className: "input-field mt-1" })),
-                    React.createElement("div", null,
-                        React.createElement("label", { className: "text-sm font-semibold text-gray-600" }, "\u0E40\u0E1A\u0E2D\u0E23\u0E4C\u0E42\u0E17\u0E23\u0E28\u0E31\u0E1E\u0E17\u0E4C"),
-                        React.createElement("input", { type: "tel", name: "tel", value: formData.tel, onChange: handleChange, className: "input-field mt-1" })),
-                    React.createElement("div", null,
-                        React.createElement("label", { className: "text-sm font-semibold text-gray-600" }, "\u0E2D\u0E32\u0E22\u0E38"),
-                        React.createElement("input", { type: "number", name: "age", value: formData.age, onChange: handleChange, className: "input-field mt-1" })),
-                    React.createElement("div", null,
-                        React.createElement("label", { className: "text-sm font-semibold text-gray-600" }, "\u0E19\u0E49\u0E33\u0E2B\u0E19\u0E31\u0E01 (\u0E01\u0E01.)"),
-                        React.createElement("input", { type: "number", name: "weight", value: formData.weight, onChange: handleChange, className: "input-field mt-1" })),
-                    React.createElement("div", null,
-                        React.createElement("label", { className: "text-sm font-semibold text-gray-600" }, "\u0E2A\u0E48\u0E27\u0E19\u0E2A\u0E39\u0E07 (\u0E0B\u0E21.)"),
-                        React.createElement("input", { type: "number", name: "height", value: formData.height, onChange: handleChange, className: "input-field mt-1" })),
-                    React.createElement("div", { className: "md:col-span-2" },
-                        React.createElement("label", { className: "text-sm font-semibold text-gray-600" }, "\u0E42\u0E23\u0E04\u0E1B\u0E23\u0E30\u0E08\u0E33\u0E15\u0E31\u0E27"),
-                        React.createElement("input", { type: "text", name: "chronic_disease", value: formData.chronic_disease, onChange: handleChange, className: "input-field mt-1" })),
-                    React.createElement("div", null,
-                        React.createElement("label", { className: "text-sm font-semibold text-gray-600" }, "\u0E1B\u0E23\u0E30\u0E27\u0E31\u0E15\u0E34\u0E41\u0E1E\u0E49\u0E22\u0E32"),
-                        React.createElement("input", { type: "text", name: "drug_allergy", value: formData.drug_allergy, onChange: handleChange, className: "input-field mt-1" }))),
-                React.createElement("h2", { className: "text-lg font-bold text-blue-700 mb-3" }, "3. \u0E23\u0E32\u0E22\u0E25\u0E30\u0E40\u0E2D\u0E35\u0E22\u0E14\u0E40\u0E04\u0E2A\u0E41\u0E25\u0E30\u0E01\u0E32\u0E23\u0E23\u0E31\u0E01\u0E29\u0E32"),
-                React.createElement("div", { className: "grid gap-4 mb-6" },
-                    React.createElement("div", null,
-                        React.createElement("label", { className: "text-sm font-semibold text-gray-600 mb-2 block" }, "\u0E2D\u0E32\u0E01\u0E32\u0E23\u0E2A\u0E33\u0E04\u0E31\u0E0D (\u0E40\u0E25\u0E37\u0E2D\u0E01\u0E44\u0E14\u0E49\u0E21\u0E32\u0E01\u0E01\u0E27\u0E48\u0E32 1) *"),
-                        React.createElement("div", { className: "grid sm:grid-cols-2 lg:grid-cols-3 gap-3 h-56 overflow-y-auto p-4 border border-gray-200 rounded-xl bg-gray-50" }, chiefComplaintsOptions.map(opt => (React.createElement("label", { key: opt.value, className: "flex items-center space-x-2 cursor-pointer p-1 hover:bg-white rounded transition" },
-                            React.createElement("input", { type: "checkbox", name: "chief_complaints", value: opt.value, checked: formData.chief_complaints.includes(opt.value), onChange: handleChange, className: "w-4 h-4 accent-blue-600" }),
-                            React.createElement("span", { className: "text-sm text-gray-700" }, opt.label)))))),
-                    React.createElement("div", null,
-                        React.createElement("label", { className: "text-sm font-semibold text-gray-600" }, "\u0E1C\u0E25\u0E01\u0E32\u0E23\u0E0B\u0E31\u0E01\u0E1B\u0E23\u0E30\u0E27\u0E31\u0E15\u0E34"),
-                        React.createElement("textarea", { name: "history", rows: "3", value: formData.history, onChange: handleChange, className: "textarea-field mt-1" })),
-                    React.createElement("div", null,
-                        React.createElement("label", { className: "text-sm font-semibold text-gray-600" }, "\u0E27\u0E34\u0E19\u0E34\u0E08\u0E09\u0E31\u0E22"),
-                        React.createElement("input", { type: "text", name: "diagnosis", value: formData.diagnosis, onChange: handleChange, className: "input-field mt-1" })),
-                    React.createElement("div", null,
-                        React.createElement("label", { className: "text-sm font-semibold text-gray-600" }, "\u0E27\u0E34\u0E18\u0E35\u0E01\u0E32\u0E23\u0E23\u0E31\u0E01\u0E29\u0E32"),
-                        React.createElement("textarea", { name: "treatment", rows: "3", value: formData.treatment, onChange: handleChange, className: "textarea-field mt-1" }))),
-                React.createElement("h2", { className: "text-lg font-bold text-blue-700 mb-3" }, "4. \u0E01\u0E32\u0E23\u0E15\u0E34\u0E14\u0E15\u0E32\u0E21\u0E2D\u0E32\u0E01\u0E32\u0E23"),
-                React.createElement("div", { className: "grid md:grid-cols-2 gap-4 mb-8 bg-orange-50/50 p-4 rounded-xl border border-orange-100" },
-                    React.createElement("div", null,
-                        React.createElement("label", { className: "text-sm font-semibold text-gray-600" }, "\u0E27\u0E31\u0E19\u0E17\u0E35\u0E48\u0E15\u0E34\u0E14\u0E15\u0E32\u0E21\u0E2D\u0E32\u0E01\u0E32\u0E23"),
-                        React.createElement("input", { type: "date", name: "follow_up_date", value: formData.follow_up_date, onChange: handleChange, className: "input-field mt-1" })),
-                    React.createElement("div", { className: "md:col-span-2" },
-                        React.createElement("label", { className: "text-sm font-semibold text-gray-600" }, "\u0E1C\u0E25\u0E01\u0E32\u0E23\u0E15\u0E34\u0E14\u0E15\u0E32\u0E21 (\u0E1A\u0E31\u0E19\u0E17\u0E36\u0E01\u0E40\u0E21\u0E37\u0E48\u0E2D\u0E15\u0E34\u0E14\u0E15\u0E32\u0E21\u0E40\u0E23\u0E35\u0E22\u0E1A\u0E23\u0E49\u0E2D\u0E22)"),
-                        React.createElement("textarea", { name: "follow_up_result", rows: "2", value: formData.follow_up_result, onChange: handleChange, className: "textarea-field mt-1" }))),
-                React.createElement("div", { className: "flex flex-col sm:flex-row gap-3 pt-4 border-t" },
-                    React.createElement("button", { type: "button", onClick: (e) => handleSubmit(e, 'รอติดตาม'), disabled: isSubmitting, className: "flex-1 btn-action btn-blue" }, "\uD83D\uDCBE \u0E1A\u0E31\u0E19\u0E17\u0E36\u0E01/\u0E1E\u0E31\u0E01\u0E40\u0E04\u0E2A (\u0E23\u0E2D\u0E15\u0E34\u0E14\u0E15\u0E32\u0E21)"),
-                    React.createElement("button", { type: "button", onClick: (e) => handleSubmit(e, 'ปิดเคสแล้ว'), disabled: isSubmitting, className: "flex-1 btn-action btn-green" }, "\uD83D\uDDA8\uFE0F \u0E1B\u0E34\u0E14\u0E40\u0E04\u0E2A & \u0E2D\u0E2D\u0E01\u0E23\u0E32\u0E22\u0E07\u0E32\u0E19"),
-                    isEditMode ?
-                        React.createElement("button", { type: "button", onClick: (e) => handleSubmit(e, null, true), disabled: isSubmitting, className: "flex-1 btn-action btn-red" }, "\uD83D\uDDD1\uFE0F \u0E25\u0E1A\u0E40\u0E04\u0E2A") :
-                        React.createElement("button", { type: "button", onClick: onCancel, disabled: isSubmitting, className: "flex-1 btn-action btn-gray" }, "\u274C \u0E22\u0E01\u0E40\u0E25\u0E34\u0E01"))))));
-};
-// 8. Dashboard (Balanced Grid)
-const Dashboard = ({ cases, loading, onAddCase, onEditCase, onReport }) => {
-    const [searchTerm, setSearchTerm] = useState('');
-    const [branchFilter, setBranchFilter] = useState('');
-    const filteredCases = useMemo(() => {
-        let filtered = cases.filter(c => ((c.patient_name || '').toLowerCase().includes(searchTerm.toLowerCase())) || ((c.tel || '').includes(searchTerm)));
-        if (branchFilter)
-            filtered = filtered.filter(c => c.branch === branchFilter);
-        return filtered.sort((a, b) => {
-            if (a.status === 'รอติดตาม' && b.status !== 'รอติดตาม')
-                return -1;
-            if (a.status !== 'รอติดตาม' && b.status === 'รอติดตาม')
-                return 1;
-            return (b.timestamp || '').localeCompare(a.timestamp || '');
-        });
-    }, [cases, searchTerm, branchFilter]);
-    const pendingCount = filteredCases.filter(c => c.status === 'รอติดตาม').length;
-    if (loading)
-        return React.createElement(LoadingSpinner, null);
-    return (React.createElement("div", { className: "dashboard-container" },
-        React.createElement("div", { className: "menu-grid" },
-            React.createElement(MenuCard, { title: "\u0E40\u0E1E\u0E34\u0E48\u0E21\u0E40\u0E04\u0E2A\u0E43\u0E2B\u0E21\u0E48", icon: "fa-plus", color: "#10b981", onClick: onAddCase }),
-            React.createElement(MenuCard, { title: "Up \u0E23\u0E32\u0E22\u0E07\u0E32\u0E19\u0E40\u0E04\u0E2A", icon: "fa-upload", color: "#f43f5e", href: DRIVE_UPLOAD_CASE_URL }),
-            React.createElement(MenuCard, { title: "\u0E2A\u0E48\u0E07\u0E15\u0E48\u0E2D\u0E1C\u0E39\u0E49\u0E1B\u0E48\u0E27\u0E22", icon: "fa-ambulance", color: "#0ea5e9", onClick: () => onReport('referral') }),
-            React.createElement(MenuCard, { title: "Up \u0E23\u0E32\u0E22\u0E07\u0E32\u0E19\u0E2A\u0E48\u0E07\u0E15\u0E48\u0E2D", icon: "fa-file-medical", color: "#f97316", href: DRIVE_REFERRAL_UPLOAD_URL }),
-            React.createElement(MenuCard, { title: "\u0E1A\u0E31\u0E15\u0E23\u0E41\u0E1E\u0E49\u0E22\u0E32", icon: "fa-id-card", color: "#d946ef", href: "https://opioidapisit.github.io/NaranjoADR/" })),
-        React.createElement("div", { className: "form-section" },
-            React.createElement("div", { className: "flex flex-col md:flex-row justify-between items-center mb-6 gap-4" },
-                React.createElement("h2", { className: "text-xl font-bold text-gray-800" }, "\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23\u0E40\u0E04\u0E2A\u0E17\u0E31\u0E49\u0E07\u0E2B\u0E21\u0E14"),
-                React.createElement("div", { className: "flex gap-2 w-full md:w-auto" },
-                    React.createElement("input", { type: "text", placeholder: "\u0E04\u0E49\u0E19\u0E2B\u0E32\u0E0A\u0E37\u0E48\u0E2D, \u0E40\u0E1A\u0E2D\u0E23\u0E4C...", value: searchTerm, onChange: (e) => setSearchTerm(e.target.value), className: "input-field !py-2 !w-full md:!w-64" }),
-                    React.createElement("select", { value: branchFilter, onChange: (e) => setBranchFilter(e.target.value), className: "select-field !py-2 !w-auto" },
-                        React.createElement("option", { value: "" }, "\u0E17\u0E38\u0E01\u0E2A\u0E32\u0E02\u0E32"),
-                        Object.keys(branchMap).map(id => React.createElement("option", { key: id, value: id }, branchMap[id]))))),
-            React.createElement("div", { className: "flex gap-4 mb-4 text-sm font-medium" },
-                React.createElement("span", { className: "text-gray-500" }, "\u0E2A\u0E16\u0E32\u0E19\u0E30\u0E40\u0E04\u0E2A:"),
-                React.createElement("span", { className: "text-orange-700 bg-orange-100 px-3 py-1 rounded-full" },
-                    "\u0E23\u0E2D\u0E15\u0E34\u0E14\u0E15\u0E32\u0E21 (",
-                    pendingCount,
-                    ")"),
-                React.createElement("span", { className: "text-green-700 bg-green-100 px-3 py-1 rounded-full" },
-                    "\u0E1B\u0E34\u0E14\u0E40\u0E04\u0E2A (",
-                    filteredCases.length - pendingCount,
-                    ")")),
-            React.createElement("div", { className: "overflow-x-auto rounded-lg border border-gray-200" },
-                React.createElement("table", { className: "min-w-full modern-table" },
-                    React.createElement("thead", null,
-                        React.createElement("tr", null,
-                            React.createElement("th", null, "\u0E0A\u0E37\u0E48\u0E2D - \u0E2A\u0E01\u0E38\u0E25"),
-                            React.createElement("th", { className: "hidden sm:table-cell" }, "\u0E2A\u0E32\u0E02\u0E32"),
-                            React.createElement("th", null, "\u0E2D\u0E32\u0E01\u0E32\u0E23\u0E2A\u0E33\u0E04\u0E31\u0E0D"),
-                            React.createElement("th", { className: "hidden lg:table-cell" }, "\u0E27\u0E31\u0E19\u0E17\u0E35\u0E48"),
-                            React.createElement("th", null, "\u0E2A\u0E16\u0E32\u0E19\u0E30"),
-                            React.createElement("th", { className: "text-right" }))),
-                    React.createElement("tbody", null, filteredCases.length > 0 ? filteredCases.map(c => {
-                        var _a;
-                        return (React.createElement("tr", { key: c.id, onClick: () => onEditCase(c), className: "cursor-pointer transition" },
-                            React.createElement("td", { className: "font-medium text-gray-900" }, c.patient_name),
-                            React.createElement("td", { className: "text-sm text-gray-500 hidden sm:table-cell" }, branchMap[c.branch]),
-                            React.createElement("td", { className: "text-sm text-gray-700 truncate max-w-xs" }, (_a = c.chief_complaints) === null || _a === void 0 ? void 0 : _a.split(';')[0]),
-                            React.createElement("td", { className: "text-sm text-gray-500 hidden lg:table-cell" }, c.timestamp),
-                            React.createElement("td", null,
-                                React.createElement("span", { className: `px-3 py-1 text-xs font-bold rounded-full ${c.status === 'รอติดตาม' ? 'bg-orange-100 text-orange-800' : 'bg-green-100 text-green-800'}` }, c.status)),
-                            React.createElement("td", { className: "text-right text-blue-600" },
-                                React.createElement("i", { className: "fa-solid fa-chevron-right" }))));
-                    }) : (React.createElement("tr", null,
-                        React.createElement("td", { colSpan: "6", className: "text-center p-8 text-gray-400" }, "\u0E44\u0E21\u0E48\u0E1E\u0E1A\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25")))))))));
-};
-// --- MAIN APP ---
-function App() {
-    const { db, userId, isAuthReady } = useFirebase();
-    const { cases, loading } = useCaseData(db, isAuthReady);
-    const [view, setView] = useState('dashboard');
-    const [currentCase, setCurrentCase] = useState(null);
-    const [showPrintView, setShowPrintView] = useState(false);
-    const [isSaving, setIsSaving] = useState(false);
-    if (!isAuthReady && (!USER_FIREBASE_CONFIG.apiKey || USER_FIREBASE_CONFIG.apiKey === "YOUR_API_KEY"))
-        return React.createElement("div", { className: "p-12 text-center text-red-500 font-bold" }, "Firebase Config Error");
-    const handleSave = async (caseData, isEdit, shouldPrint = false) => {
-        if (!db || !userId) {
-            alert('ระบบยังไม่พร้อม');
-            return;
-        }
-        setIsSaving(true);
-        try {
-            let docId = caseData.id;
-            const colRef = getCollectionCompat(db, 'artifacts', FIREBASE_PATH_APP_ID, 'public/data/cases');
-            if (isEdit) {
-                const { id, timestamp, ...dataToUpdate } = caseData;
-                await getDocCompat(db, 'artifacts', FIREBASE_PATH_APP_ID, 'public/data/cases', caseData.id).update(dataToUpdate);
-            }
-            else {
-                const newDocRef = await colRef.add({ ...caseData, timestamp: serverTimestampCompat(), userId });
-                docId = newDocRef.id;
-            }
-            if (shouldPrint) {
-                triggerAppsScriptRecord({ ...caseData, id: docId, status: 'ปิดเคสแล้ว' }, isEdit);
-                setCurrentCase(cases.find(c => c.id === docId) || { ...caseData, id: docId, timestamp: new Date().toLocaleDateString('th-TH') });
-                setShowPrintView(true);
-            }
-            else {
-                alert(`อัปเดตเคส ${caseData.patient_name} สำเร็จ`);
-                setView('dashboard');
-                setCurrentCase(null);
-            }
-        }
-        catch (e) {
-            console.error(e);
-            alert('เกิดข้อผิดพลาดในการบันทึก');
-        }
-        finally {
-            setIsSaving(false);
-        }
-    };
-    const triggerAppsScriptRecord = async (caseData, isEdit) => {
-        if (APPS_SCRIPT_RECORD_URL.includes('YOUR_DEPLOYED'))
-            return;
-        try {
-            await fetch(APPS_SCRIPT_RECORD_URL, { method: 'POST', mode: 'cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...caseData, isEdit }) });
-        }
-        catch (e) {
-            alert('ข้อมูลถูกบันทึกใน Firebase แล้ว ยืนยันการบันทึกเป็น PDF ของท่าน');
-        }
-    };
-    const handleReportSubmission = async (reportData, type) => {
-        setIsSaving(false);
-        setCurrentCase({ ...reportData, timestamp: new Date().toLocaleDateString('th-TH') });
-        setView('referral_print');
-    };
-    const handleReferralFinalize = () => { window.print(); alert('เสร็จสิ้นการส่งต่อ! อย่าลืมอัปโหลดเคสต่อไป'); setView('dashboard'); setCurrentCase(null); };
-    const handleDelete = async (caseId) => {
-        if (!db || !userId)
-            return;
-        try {
-            await getDocCompat(db, 'artifacts', FIREBASE_PATH_APP_ID, 'public/data/cases', caseId).delete();
-            alert('ลบเคสสำเร็จ');
-            setView('dashboard');
-            setCurrentCase(null);
-        }
-        catch (e) {
-            alert('ลบไม่สำเร็จ');
-        }
-    };
-    let content;
-    if (view === 'new_case' || view === 'edit_case')
-        content = React.createElement(CaseForm, { initialCase: currentCase, onSave: handleSave, onCancel: () => { setView('dashboard'); setCurrentCase(null); }, onDelete: handleDelete });
-    else if (view === 'referral_form')
-        content = React.createElement(ReferralForm, { initialData: currentCase, onCancel: () => { setView('dashboard'); setCurrentCase(null); }, onSendReport: handleReportSubmission });
-    else if (view === 'referral_print' && currentCase)
-        content = React.createElement(ReferralPrintView, { caseData: currentCase, onEdit: () => setView('referral_form'), onFinalize: handleReferralFinalize });
-    else
-        content = React.createElement(Dashboard, { cases: cases, loading: loading, onAddCase: () => { setView('new_case'); setCurrentCase(null); }, onEditCase: (c) => { setCurrentCase(c); setView('edit_case'); }, onReport: (type) => type === 'referral' ? setView('referral_form') : alert('ระบบรายงาน ADR อยู่ระหว่างการพัฒนา') });
-    return (React.createElement("div", null,
-        React.createElement("header", { className: "header-section no-print" },
-            React.createElement("div", { className: "header-content" },
-                React.createElement("img", { src: SHOP_LOGO_URL, alt: "\u0E15\u0E23\u0E32", className: "shop-logo", onError: (e) => { e.target.style.display = 'none'; } }),
-                React.createElement("div", null,
-                    React.createElement("h1", { className: "text-2xl font-bold tracking-tight mb-1" }, "\u0E23\u0E30\u0E1A\u0E1A\u0E1A\u0E31\u0E19\u0E17\u0E36\u0E01\u0E01\u0E32\u0E23\u0E23\u0E31\u0E01\u0E29\u0E32\u0E41\u0E25\u0E30\u0E2A\u0E48\u0E07\u0E15\u0E48\u0E2D\u0E1C\u0E39\u0E49\u0E1B\u0E48\u0E27\u0E22"),
-                    React.createElement("p", { className: "text-blue-100 text-sm opacity-90" }, "\u0E04\u0E25\u0E34\u0E19\u0E34\u0E04\u0E22\u0E32 \u0E21\u0E2D \u0E2D\u0E2D \u0E08\u0E31\u0E07\u0E2B\u0E27\u0E31\u0E14\u0E15\u0E23\u0E31\u0E07")))),
-        content,
-        showPrintView && currentCase && React.createElement(StandardReportPrintView, { caseData: currentCase, onHide: () => setShowPrintView(false), onPostPrint: () => { setShowPrintView(false); setView('dashboard'); setCurrentCase(null); } }),
-        isSaving && React.createElement("div", { className: "fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-[100] no-print" },
-            React.createElement("div", { className: "bg-white p-8 rounded-xl shadow-2xl flex flex-col items-center" },
-                React.createElement(LoadingSpinner, null),
-                React.createElement("span", { className: "text-gray-800 font-bold mt-4" }, "\u0E01\u0E33\u0E25\u0E31\u0E07\u0E1A\u0E31\u0E19\u0E17\u0E36\u0E01\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25..."))),
-        React.createElement(Footer, null)));
-}
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(React.createElement(App, null));
 
+    // Popup Logic
+    window.openPopup = function(productCode) {
+        const product = products.find(p => p.code === productCode);
+        if (!product) return;
+
+        currentProductCode = product.code;
+        currentImageIndex = 0;
+        currentImageList = imageSuffixes.map(suffix => `${product.code}${suffix}.jpg`);
+
+        const popupTitle = document.getElementById('popup-title');
+        popupTitle.innerText = product.name;
+        
+        updateGalleryImage();
+        const popup = document.getElementById('main-popup');
+        popup.style.display = 'flex';
+        setTimeout(() => popup.classList.add('show'), 10);
+        document.body.style.overflow = 'hidden';
+    }
+
+    const popup = document.getElementById('main-popup');
+    const popupImg = document.getElementById('popup-img');
+    const popupPlaceholder = document.getElementById('popup-placeholder');
+    const counterDisplay = document.getElementById('image-counter');
+    
+    let currentProductCode = '';
+    let currentImageIndex = 0;
+    let currentImageList = [];
+
+    window.closePopup = function() {
+        popup.classList.remove('show');
+        setTimeout(() => {
+            popup.style.display = 'none';
+            document.body.style.overflow = '';
+        }, 300);
+    }
+
+    window.changeImage = function(direction) {
+        currentImageIndex += direction;
+        if (currentImageIndex >= currentImageList.length) currentImageIndex = 0;
+        else if (currentImageIndex < 0) currentImageIndex = currentImageList.length - 1;
+        updateGalleryImage();
+    }
+
+    function updateGalleryImage() {
+        const imgSrc = currentImageList[currentImageIndex];
+        popupImg.style.display = 'none';
+        popupPlaceholder.style.display = 'block';
+        
+        const imgLoader = new Image();
+        imgLoader.src = imgSrc;
+        imgLoader.onload = function() {
+            popupPlaceholder.style.display = 'none';
+            popupImg.src = imgSrc;
+            popupImg.style.display = 'block';
+        };
+        counterDisplay.innerText = `${currentImageIndex + 1} / ${currentImageList.length}`;
+    }
+
+    popup.addEventListener('click', (e) => { if (e.target === popup) closePopup(); });
 </script>
 </body>
 </html>
